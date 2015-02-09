@@ -201,4 +201,4 @@ FakesAssemblies/
 *.log
 *.pdfsync
 
-!figures/*.pdf
+!lab*/figures/*.pdf
