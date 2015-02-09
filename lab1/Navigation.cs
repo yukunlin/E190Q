@@ -36,7 +36,7 @@ namespace DrRobot.JaguarControl
         public int deltaT = 50;
         private static int encoderMax = 32767;
         public int pulsesPerRotation = 190;
-        public double wheelRadius = 0.089;
+        public double wheelRadius = 0.0755;
         public double robotRadius = 0.242;//0.232
         private double angleTravelled, distanceTravelled;
         private double maxVelocity = 0.10;
@@ -275,7 +275,8 @@ namespace DrRobot.JaguarControl
             //int fileCnt= 0;
             String date = DateTime.Now.Year.ToString() + "-" + DateTime.Now.Month.ToString() + "-" + DateTime.Now.Day.ToString() + "-" + DateTime.Now.Minute.ToString();
             ToString();
-            logFile = File.CreateText("JaguarData_" + date + ".txt");
+            logFile = File.CreateText("C:\\Users\\CAPCOM\\Desktop\\JaguarData_" + date + ".csv");
+            logFile.WriteLine("time,x,y,theta,distance");
             startTime = DateTime.Now;
             loggingOn = true;
         }
@@ -393,8 +394,42 @@ namespace DrRobot.JaguarControl
             // You can set and use variables like diffEncoder1, currentEncoderPulse1,
             // wheelDistanceL, wheelRadius, encoderResolution etc. These are defined
             // in the Robot.h file.
+            var diffEncoderPulseL = currentEncoderPulseL - lastEncoderPulseL;
+            var diffEncoderPulseR = currentEncoderPulseR - lastEncoderPulseR;
 
+            if (Math.Abs(diffEncoderPulseL) >  encoderMax / 2.0)
+            {
+                if (diffEncoderPulseL < 0)       // if going forwards
+                    diffEncoderPulseL += encoderMax;
+                else if (diffEncoderPulseL > 0) // if going backwards
+                    diffEncoderPulseL -= encoderMax;
+            }
+
+            if (Math.Abs(diffEncoderPulseR) > encoderMax / 2.0)
+            {
+                if (diffEncoderPulseR < 0)       // if going forwards
+                    diffEncoderPulseR += encoderMax;
+                else if (diffEncoderPulseR > 0) // if going backwards
+                    diffEncoderPulseR -= encoderMax;
+            }
             
+
+            // Update encoder measurements
+            lastEncoderPulseL = currentEncoderPulseL;
+            lastEncoderPulseR = currentEncoderPulseR;
+
+
+            // calculate distance
+            double numRotationL = diffEncoderPulseL / pulsesPerRotation;
+            double numRotationR = diffEncoderPulseR / pulsesPerRotation;
+
+            wheelDistanceL = numRotationL * wheelRadius * 2 * Math.PI;
+            wheelDistanceR = -numRotationR * wheelRadius * 2 * Math.PI;
+
+            // distance and angle robot travelled
+            distanceTravelled = (wheelDistanceL + wheelDistanceR)/2;
+            angleTravelled = (wheelDistanceR - wheelDistanceL)/(2*robotRadius);
+     
 
             // ****************** Additional Student Code: End   ************
         }
@@ -410,13 +445,31 @@ namespace DrRobot.JaguarControl
             // (i.e. using last x, y, t as well as angleTravelled and distanceTravelled).
             // Make sure t stays between pi and -pi
 
+            // calculate change in x and y position
+            var deltX = distanceTravelled*Math.Cos(t + angleTravelled/2);
+            var deltY = distanceTravelled*Math.Sin(t + angleTravelled/2);
+
             // Update the actual
-            x = 0;
-            y = 0;
-            t = 0;
+            x = x+deltX;
+            y = y+deltY;
+            t = t+angleTravelled;
+
+            t = mod(t, 2*Math.PI);
+            if (t > Math.PI)
+                t = t - 2*Math.PI;
+
+
+
+
 
 
             // ****************** Additional Student Code: End   ************
+        }
+
+        public double mod(double x, double m)
+        {
+            double r = x % m;
+            return r < 0 ? r + m : r;
         }
 
 

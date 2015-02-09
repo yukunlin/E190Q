@@ -856,8 +856,8 @@ namespace DrRobot.JaguarControl
             int forwardVel = 0;
             if ((!protectMotorTemp) &&(!protectMotorStuck))
             {
-                forwardVel = (MOTDIR * trackBarForwardPower.Value);
-                forwardVel = Math.Min(100, Math.Max(-100, forwardVel));
+                forwardVel = (MOTDIR * trackBarForwardPower.Value * 5);
+                forwardVel = Math.Min(500, Math.Max(-500, forwardVel));
             }
             else
                 forwardVel = 0;
@@ -877,8 +877,8 @@ namespace DrRobot.JaguarControl
             int turnVel = 0;
             if ((!protectMotorTemp) && (!protectMotorStuck))
             {
-                turnVel = (MOTDIR * trackBarTurnPower.Value);
-                turnVel = Math.Min(100, Math.Max(-100, turnVel));
+                turnVel = (MOTDIR * trackBarTurnPower.Value * 10);
+                turnVel = Math.Min(1000, Math.Max(-1000, turnVel));
             }
             else
                 turnVel = 0;
