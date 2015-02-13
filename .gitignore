@@ -200,5 +200,8 @@ FakesAssemblies/
 *.aux
 *.log
 *.pdfsync
+*.bbl
+*.bbg
+*.csv
 
 !lab*/figures/*.pdf

@@ -1,0 +1,169 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 10.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[      5614,        159]
+NotebookOptionsPosition[      5219,        140]
+NotebookOutlinePosition[      5606,        157]
+CellTagsIndexPosition[      5563,        154]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{
+  "inputFile", "=", 
+   "\"\</Volumes/NO NAME/190_lab2_basement/5m_trial1_concrete.csv\>\""}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"inputTable", "=", 
+   RowBox[{"Import", "@", "inputFile"}]}], ";"}]}], "Input"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Manipulate", "[", "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"Graphics", "[", 
+     RowBox[{
+      RowBox[{"{", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{"Transparent", ",", 
+          RowBox[{"EdgeForm", "@", "Black"}], ",", "\[IndentingNewLine]", 
+          RowBox[{"Rotate", "[", "\[IndentingNewLine]", 
+           RowBox[{
+            RowBox[{"Translate", "[", "\[IndentingNewLine]", 
+             RowBox[{
+              RowBox[{"Rectangle", "[", 
+               RowBox[{
+                RowBox[{
+                 RowBox[{"{", 
+                  RowBox[{"1.5", ",", "1"}], "}"}], "*", ".2"}], ",", 
+                RowBox[{
+                 RowBox[{"{", 
+                  RowBox[{
+                   RowBox[{"-", "1.5"}], ",", 
+                   RowBox[{"-", "1"}]}], "}"}], "*", ".2"}]}], "]"}], ",", 
+              "\[IndentingNewLine]", 
+              RowBox[{
+               RowBox[{"inputTable", "[", 
+                RowBox[{"[", "x", "]"}], "]"}], "[", 
+               RowBox[{"[", 
+                RowBox[{"2", ";;", "3"}], "]"}], "]"}]}], 
+             "\[IndentingNewLine]", "]"}], ",", "\[IndentingNewLine]", 
+            RowBox[{
+             RowBox[{"inputTable", "[", 
+              RowBox[{"[", "x", "]"}], "]"}], "[", 
+             RowBox[{"[", "4", "]"}], "]"}]}], "\[IndentingNewLine]", "]"}]}],
+          "\[IndentingNewLine]", "}"}], ",", "\[IndentingNewLine]", 
+        RowBox[{"{", 
+         RowBox[{"Line", "[", 
+          RowBox[{"{", 
+           RowBox[{
+            RowBox[{"{", 
+             RowBox[{"0", ",", "0"}], "}"}], ",", 
+            RowBox[{"{", 
+             RowBox[{"5", ",", "0"}], "}"}]}], "}"}], "]"}], "}"}]}], 
+       "\[IndentingNewLine]", "}"}], ",", "\[IndentingNewLine]", 
+      RowBox[{"PlotRange", "\[Rule]", 
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{"-", "1"}], ",", "6"}], "}"}], ",", 
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{"-", ".5"}], ",", ".5"}], "}"}]}], "}"}]}], ",", 
+      "\[IndentingNewLine]", 
+      RowBox[{"ImageSize", "\[Rule]", "700"}]}], "\[IndentingNewLine]", "]"}],
+     ",", "\[IndentingNewLine]", 
+    RowBox[{"{", 
+     RowBox[{"x", ",", "2", ",", 
+      RowBox[{"Length", "@", "inputTable"}], ",", "1"}], "}"}]}], 
+   "\[IndentingNewLine]", "]"}], "\[IndentingNewLine]"}]], "Input"],
+
+Cell[BoxData[
+ TagBox[
+  StyleBox[
+   DynamicModuleBox[{$CellContext`x$$ = 2, Typeset`show$$ = True, 
+    Typeset`bookmarkList$$ = {}, Typeset`bookmarkMode$$ = "Menu", 
+    Typeset`animator$$, Typeset`animvar$$ = 1, Typeset`name$$ = 
+    "\"untitled\"", Typeset`specs$$ = {{
+      Hold[$CellContext`x$$], 2, 298, 1}}, Typeset`size$$ = {
+    1050., {70., 80.}}, Typeset`update$$ = 0, Typeset`initDone$$, 
+    Typeset`skipInitDone$$ = True, $CellContext`x$3524$$ = 0}, 
+    DynamicBox[Manipulate`ManipulateBoxes[
+     1, StandardForm, "Variables" :> {$CellContext`x$$ = 2}, 
+      "ControllerVariables" :> {
+        Hold[$CellContext`x$$, $CellContext`x$3524$$, 0]}, 
+      "OtherVariables" :> {
+       Typeset`show$$, Typeset`bookmarkList$$, Typeset`bookmarkMode$$, 
+        Typeset`animator$$, Typeset`animvar$$, Typeset`name$$, 
+        Typeset`specs$$, Typeset`size$$, Typeset`update$$, Typeset`initDone$$,
+         Typeset`skipInitDone$$}, "Body" :> Graphics[{{Transparent, 
+          EdgeForm[Black], 
+          Rotate[
+           Translate[
+            Rectangle[{1.5, 1} 0.2, {-1.5, -1} 0.2], 
+            Part[
+             Part[$CellContext`inputTable, $CellContext`x$$], 
+             Span[2, 3]]], 
+           Part[
+            Part[$CellContext`inputTable, $CellContext`x$$], 4]]}, {
+          Line[{{0, 0}, {5, 0}}]}}, PlotRange -> {{-1, 6}, {-0.5, 0.5}}, 
+        ImageSize -> 700], 
+      "Specifications" :> {{$CellContext`x$$, 2, 298, 1}}, "Options" :> {}, 
+      "DefaultOptions" :> {}],
+     ImageSizeCache->{1116., {156., 164.}},
+     SingleEvaluation->True],
+    Deinitialization:>None,
+    DynamicModuleValues:>{},
+    SynchronousInitialization->True,
+    UndoTrackedVariables:>{Typeset`show$$, Typeset`bookmarkMode$$},
+    UnsavedVariables:>{Typeset`initDone$$},
+    UntrackedVariables:>{Typeset`size$$}], "Manipulate",
+   Deployed->True,
+   StripOnInput->False],
+  Manipulate`InterpretManipulate[1]]], "Output"]
+}, Open  ]]
+},
+WindowSize->{1680, 938},
+WindowMargins->{{0, Automatic}, {Automatic, -1}},
+Magnification:>1.5 Inherited,
+FrontEndVersion->"10.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (December 4, \
+2014)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[558, 20, 265, 8, 69, "Input"],
+Cell[CellGroupData[{
+Cell[848, 32, 2418, 61, 494, "Input"],
+Cell[3269, 95, 1934, 42, 344, "Output"]
+}, Open  ]]
+}
+]
+*)
+
+(* End of internal cache information *)
+
