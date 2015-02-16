@@ -82,6 +82,9 @@ namespace DrRobot.JaguarControl
         public MotorData leftRearWheelMotor = new MotorData();
         public MotorData rightRearWheelMotor = new MotorData();
 
+        private short zeroOutput = 16383;
+        private short maxPosOutput = 32767;
+
         private int forwardPower = 0;
         private int turnPower = 0;
 
@@ -108,6 +111,7 @@ namespace DrRobot.JaguarControl
         private int expandIO = 0xff;
         private const short LEFTARMCHANNEL = 0;
         private const short RIGHTARMCHANNEL = 1;
+        public int forwardVel, turnVel;
 
         private const short LEFTWHEELCHANNEL = 3;           //3
         private const short RIGHTWHEELCHANNEL = 4;          //4
@@ -147,7 +151,7 @@ namespace DrRobot.JaguarControl
 
         /////////////////////////////////////////////////////////////////
         
-        #region Form funtions
+        #region Form functions
         
         public JaguarCtrl()
         {
@@ -339,7 +343,7 @@ namespace DrRobot.JaguarControl
                 // Start the streaming
                 myAMC.Play();
                 myAMC.AudioReceiveURL = "http://" + jaguarSetting.CameraIP + ":" + jaguarSetting .CameraPort + "/axis-cgi/audio/receive.cgi";
-                myAMC.Volume = 100;
+                myAMC.Volume = 0;
 
                 //myAMC.AudioReceiveStart();
                 myAMC.AudioTransmitURL = "http://" + jaguarSetting.CameraIP + ":" + jaguarSetting.CameraPort + "/axis-cgi/audio/transmit.cgi";
@@ -849,44 +853,50 @@ namespace DrRobot.JaguarControl
             GetData();
         }
 
+        #endregion
+
+        #region TrackBar control
         private void trackBarForwardPower_ValueChanged(object sender, EventArgs e)
         {
             controlMode = MANUAL;
             trackBarTurnPower.Value = 0;
-            int forwardVel = 0;
+            forwardVel = 0;
             if ((!protectMotorTemp) &&(!protectMotorStuck))
             {
-                forwardVel = (MOTDIR * trackBarForwardPower.Value * 5);
-                forwardVel = Math.Min(500, Math.Max(-500, forwardVel));
+                forwardVel = zeroOutput + (MOTDIR * trackBarForwardPower.Value) * (maxPosOutput - zeroOutput) / 100;
+                forwardVel = Math.Min(maxPosOutput, Math.Max(0, forwardVel));
             }
             else
-                forwardVel = 0;
+                forwardVel = zeroOutput;
 
             
             // seems a minimum of 16 is needed for forwardVel to move.
             if (Simulating())
-                simulatedJaguar.DcMotorVelocityNonTimeCtrAll(0, 0, 0, (short)forwardVel, (short)-forwardVel, 0);
+                simulatedJaguar.DcMotorPwmNonTimeCtrAll(0, 0, 0, (short)forwardVel, (short)(zeroOutput - (forwardVel-zeroOutput)), 0);
             else
-                realJaguar.DcMotorVelocityNonTimeCtrAll(0, 0, 0, (short) forwardVel, (short) -forwardVel, 0);
+            {
+                realJaguar.DcMotorPwmNonTimeCtrAll(0, 0, 0, (short)forwardVel, (short)(zeroOutput - (forwardVel - zeroOutput)), 0);
+            }
         }
 
         private void trackBarTurnPower_ValueChanged(object sender, EventArgs e)
         {
             controlMode = MANUAL;
             trackBarForwardPower.Value = 0;
-            int turnVel = 0;
+            turnVel = 0;
+
             if ((!protectMotorTemp) && (!protectMotorStuck))
             {
-                turnVel = (MOTDIR * trackBarTurnPower.Value * 10);
-                turnVel = Math.Min(1000, Math.Max(-1000, turnVel));
+                turnVel = zeroOutput+(MOTDIR * trackBarTurnPower.Value)*(maxPosOutput-zeroOutput)/100;
+                turnVel = Math.Min(maxPosOutput, Math.Max(0, turnVel));
             }
             else
-                turnVel = 0;
+                turnVel = zeroOutput;
 
             if (Simulating())
-                simulatedJaguar.DcMotorVelocityNonTimeCtrAll(0, 0, 0, (short)turnVel, (short)turnVel, 0);
+                simulatedJaguar.DcMotorPwmNonTimeCtrAll(0, 0, 0, (short)turnVel, (short)turnVel, 0);
             else
-                realJaguar.DcMotorVelocityNonTimeCtrAll(0, 0, 0, (short)turnVel, (short)turnVel, 0);
+                realJaguar.DcMotorPwmNonTimeCtrAll(0, 0, 0, (short)turnVel, (short)turnVel, 0);
         }
 
 
@@ -960,7 +970,6 @@ namespace DrRobot.JaguarControl
                 pictureBoxLaser.BringToFront();
                 btnScan.BringToFront();
                 btnTurnOn.BringToFront();
-              
             }
             else
             {
@@ -1109,6 +1118,8 @@ namespace DrRobot.JaguarControl
             controlMode = MANUAL;
             trackBarForwardPower.Value = 0;
             trackBarTurnPower.Value = 0;
+            turnVel = 0;
+            forwardVel = 0;
 
             if (Simulating())
                 simulatedJaguar.DcMotorVelocityNonTimeCtrAll(0, 0, 0, 0, 0, 0);
@@ -1143,7 +1154,10 @@ namespace DrRobot.JaguarControl
         private void checkBoxHardware_CheckedChanged(object sender, EventArgs e)
         {
             if (checkBoxHardware.Checked)
+            {
+                navigation.CalibrateIMU();
                 experimentMode = HARDWARE;
+            }
             else
                 experimentMode = SIMULATOR;
             navigation.Reset();
