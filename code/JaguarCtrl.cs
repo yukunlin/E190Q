@@ -259,13 +259,13 @@ namespace DrRobot.JaguarControl
 
 
                 // Draw Robot
-                int xShift = (int)(mapResolution * navigation.x);
-                int yShift = (int)(mapResolution * navigation.y);
+                int xShift = (int)(mapResolution * navigation._x);
+                int yShift = (int)(mapResolution * navigation._y);
                 double robotDiagnol = 0.25 * mapResolution;
                 for (int i = 0; i < 4; i++)
                 {
-                    robotCorners[i].X = (int)(xCenter + xShift + robotDiagnol * Math.Cos(navigation.t + robotCornerAngles[i]));
-                    robotCorners[i].Y = (int)(yCenter - yShift - robotDiagnol * Math.Sin(navigation.t + robotCornerAngles[i]));
+                    robotCorners[i].X = (int)(xCenter + xShift + robotDiagnol * Math.Cos(navigation._theta + robotCornerAngles[i]));
+                    robotCorners[i].Y = (int)(yCenter - yShift - robotDiagnol * Math.Sin(navigation._theta + robotCornerAngles[i]));
                 }
                 g.FillPolygon(Brushes.DarkSlateGray, robotCorners);
             
@@ -275,18 +275,18 @@ namespace DrRobot.JaguarControl
             
                 for (int i = 0; i < 2; i++)
                 {
-                    trackCorners[2 * i].X = (int)(xCenter + xShift + robotDiagnol * Math.Cos(navigation.t + robotTrackAngles[2 * i]));
-                    trackCorners[2 * i].Y = (int)(yCenter - yShift - robotDiagnol * Math.Sin(navigation.t + robotTrackAngles[2 * i]));
-                    trackCorners[2 * i+1].X = (int)(xCenter + xShift + robotDiagnol * Math.Cos(navigation.t + robotTrackAngles[2 * i+1]));
-                    trackCorners[2 * i+1].Y = (int)(yCenter - yShift - robotDiagnol * Math.Sin(navigation.t + robotTrackAngles[2 * i+1]));
+                    trackCorners[2 * i].X = (int)(xCenter + xShift + robotDiagnol * Math.Cos(navigation._theta + robotTrackAngles[2 * i]));
+                    trackCorners[2 * i].Y = (int)(yCenter - yShift - robotDiagnol * Math.Sin(navigation._theta + robotTrackAngles[2 * i]));
+                    trackCorners[2 * i+1].X = (int)(xCenter + xShift + robotDiagnol * Math.Cos(navigation._theta + robotTrackAngles[2 * i+1]));
+                    trackCorners[2 * i+1].Y = (int)(yCenter - yShift - robotDiagnol * Math.Sin(navigation._theta + robotTrackAngles[2 * i+1]));
                     g.DrawLine(trackPen, trackCorners[2 * i], trackCorners[2 * i + 1]);
                 }
 
                 // Draw Laser on top
                 double laserDiagonal = 0.15*mapResolution;
                 int laserDiameter = (int)(0.08*mapResolution);
-                int X_laser = (int)(xCenter + xShift + laserDiagonal * Math.Cos(navigation.t) - laserDiameter / 2);
-                int Y_laser = (int)(yCenter - yShift - laserDiagonal * Math.Sin(navigation.t) - laserDiameter / 2);
+                int X_laser = (int)(xCenter + xShift + laserDiagonal * Math.Cos(navigation._theta) - laserDiameter / 2);
+                int Y_laser = (int)(yCenter - yShift - laserDiagonal * Math.Sin(navigation._theta) - laserDiameter / 2);
                 g.FillEllipse(Brushes.LightGray, X_laser, Y_laser, laserDiameter, laserDiameter);
 
                 // Draw the bitmap to the form
@@ -510,9 +510,9 @@ namespace DrRobot.JaguarControl
             lblEncoderPos2.Text = rightFrontWheelMotor.encoderPos.ToString();    // 
             lblVel1.Text = (MOTDIR * leftFrontWheelMotor.encodeSpeed * leftFrontWheelMotor.encoderDir).ToString();
             lblVel2.Text = (-MOTDIR * rightFrontWheelMotor.encodeSpeed * rightFrontWheelMotor.encoderDir).ToString();
-            lblEncoderPos4.Text = navigation.x.ToString();
-            lblVel4.Text = navigation.y.ToString();
-            lblTemp4.Text = navigation.t.ToString();
+            lblEncoderPos4.Text = navigation._x.ToString();
+            lblVel4.Text = navigation._y.ToString();
+            lblTemp4.Text = navigation._theta.ToString();
         }
 
         private void UpdateFormEncoderData()
@@ -532,9 +532,9 @@ namespace DrRobot.JaguarControl
                 lblEncoderPos2.Text = encr;    // 
                 lblVel1.Text = vell;
                 lblVel2.Text = velr;
-                lblEncoderPos4.Text = navigation.x.ToString();
-                lblVel4.Text = navigation.y.ToString();
-                lblTemp4.Text = navigation.t.ToString();
+                lblEncoderPos4.Text = navigation._x.ToString();
+                lblVel4.Text = navigation._y.ToString();
+                lblTemp4.Text = navigation._theta.ToString();
             }
         }
 
@@ -875,6 +875,7 @@ namespace DrRobot.JaguarControl
                 simulatedJaguar.DcMotorPwmNonTimeCtrAll(0, 0, 0, (short)forwardVel, (short)(zeroOutput - (forwardVel-zeroOutput)), 0);
             else
             {
+                Console.WriteLine(forwardVel);
                 realJaguar.DcMotorPwmNonTimeCtrAll(0, 0, 0, (short)forwardVel, (short)(zeroOutput - (forwardVel - zeroOutput)), 0);
             }
         }
@@ -887,17 +888,20 @@ namespace DrRobot.JaguarControl
 
             if ((!protectMotorTemp) && (!protectMotorStuck))
             {
-                turnVel = zeroOutput+(MOTDIR * trackBarTurnPower.Value)*(maxPosOutput-zeroOutput)/100;
+                turnVel = zeroOutput + (MOTDIR*trackBarTurnPower.Value)*(maxPosOutput - zeroOutput)/100;
                 turnVel = Math.Min(maxPosOutput, Math.Max(0, turnVel));
             }
             else
                 turnVel = zeroOutput;
 
             if (Simulating())
-                simulatedJaguar.DcMotorPwmNonTimeCtrAll(0, 0, 0, (short)turnVel, (short)turnVel, 0);
+                simulatedJaguar.DcMotorPwmNonTimeCtrAll(0, 0, 0, (short) turnVel, (short) turnVel, 0);
             else
+            {
+                Console.WriteLine(turnVel);
                 realJaguar.DcMotorPwmNonTimeCtrAll(0, 0, 0, (short)turnVel, (short)turnVel, 0);
-        }
+            }
+    }
 
 
  
@@ -1185,6 +1189,7 @@ namespace DrRobot.JaguarControl
                 navigation.desiredX = double.Parse(txtStartLat.Text);
                 navigation.desiredY = double.Parse(txtStartLong.Text);
                 navigation.desiredT = double.Parse(txtStartTheta.Text);
+                navigation.rotate = false;
             }
             catch
             {
