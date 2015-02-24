@@ -144,6 +144,7 @@ namespace DrRobot.JaguarControl
         public int experimentMode = SIMULATOR;
         public int MANUAL = 0;
         public int AUTONOMOUS = 1;
+        public bool trackTraj=false;
         public int controlMode = 0;
         private Thread sensorThread;
         public bool runSensorThread;
@@ -463,7 +464,12 @@ namespace DrRobot.JaguarControl
         #region GoogleEarth function
 
         //this is a "Look At" function
-        private void btnSetMapCenter_Click(object sender, EventArgs e) { }
+        private void btnSetMapCenter_Click(object sender, EventArgs e)
+        {
+            navigation._trajX.AddLast(double.Parse(txtStartLat.Text));
+            navigation._trajY.AddLast(double.Parse(txtStartLong.Text));
+            navigation._trajT.AddLast(double.Parse(txtStartTheta.Text));
+        }
         
         private void trackBarZoom_Scroll(object sender, EventArgs e) 
         {
@@ -1189,15 +1195,38 @@ namespace DrRobot.JaguarControl
                 navigation.desiredX = double.Parse(txtStartLat.Text);
                 navigation.desiredY = double.Parse(txtStartLong.Text);
                 navigation.desiredT = double.Parse(txtStartTheta.Text);
-                navigation.rotate = false;
             }
             catch
             {
             }
             controlMode = AUTONOMOUS;
+            trackTraj = false;
         }
 
         # endregion
+
+
+        private void btn_flytraj_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                navigation.desiredX = navigation._trajX.First.Value;
+                navigation.desiredY = navigation._trajY.First.Value;
+                navigation.desiredT = navigation._trajT.First.Value;
+
+                navigation._trajX.RemoveFirst();
+                navigation._trajY.RemoveFirst();
+                navigation._trajT.RemoveFirst();
+            }
+            catch
+            {
+            }
+            trackTraj = true;
+            controlMode = AUTONOMOUS;
+            
+            
+        }
+
 
     }
 }

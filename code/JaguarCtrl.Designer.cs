@@ -109,6 +109,7 @@
             this.label16 = new System.Windows.Forms.Label();
             this.desiredT = new System.Windows.Forms.Label();
             this.txtStartTheta = new System.Windows.Forms.TextBox();
+            this.btn_flytraj = new System.Windows.Forms.Button();
             this.groupBoxGPSIMU.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.realJaguar)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxIMUGPS)).BeginInit();
@@ -555,7 +556,7 @@
             // txtStartLong
             // 
             this.txtStartLong.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtStartLong.Location = new System.Drawing.Point(134, 426);
+            this.txtStartLong.Location = new System.Drawing.Point(94, 426);
             this.txtStartLong.Name = "txtStartLong";
             this.txtStartLong.Size = new System.Drawing.Size(47, 20);
             this.txtStartLong.TabIndex = 29;
@@ -564,7 +565,7 @@
             // txtStartLat
             // 
             this.txtStartLat.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtStartLat.Location = new System.Drawing.Point(44, 426);
+            this.txtStartLat.Location = new System.Drawing.Point(26, 426);
             this.txtStartLat.Name = "txtStartLat";
             this.txtStartLat.Size = new System.Drawing.Size(45, 20);
             this.txtStartLat.TabIndex = 28;
@@ -574,30 +575,30 @@
             // 
             this.label11.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label11.ForeColor = System.Drawing.Color.Black;
-            this.label11.Location = new System.Drawing.Point(97, 427);
+            this.label11.Location = new System.Drawing.Point(73, 427);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(59, 18);
             this.label11.TabIndex = 27;
-            this.label11.Text = "Des Y:";
+            this.label11.Text = "Y:";
             this.label11.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // label12
             // 
             this.label12.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label12.ForeColor = System.Drawing.Color.Black;
-            this.label12.Location = new System.Drawing.Point(7, 427);
+            this.label12.Location = new System.Drawing.Point(8, 427);
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(61, 18);
             this.label12.TabIndex = 26;
-            this.label12.Text = "Des X:";
+            this.label12.Text = "X:";
             this.label12.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // btnSetStartPoint
             // 
             this.btnSetStartPoint.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnSetStartPoint.Location = new System.Drawing.Point(285, 424);
+            this.btnSetStartPoint.Location = new System.Drawing.Point(218, 423);
             this.btnSetStartPoint.Name = "btnSetStartPoint";
-            this.btnSetStartPoint.Size = new System.Drawing.Size(90, 25);
+            this.btnSetStartPoint.Size = new System.Drawing.Size(81, 25);
             this.btnSetStartPoint.TabIndex = 25;
             this.btnSetStartPoint.Text = "FlyToSetPoint";
             this.btnSetStartPoint.UseVisualStyleBackColor = true;
@@ -726,7 +727,7 @@
             // btnSetMapCenter
             // 
             this.btnSetMapCenter.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnSetMapCenter.Location = new System.Drawing.Point(395, 424);
+            this.btnSetMapCenter.Location = new System.Drawing.Point(394, 423);
             this.btnSetMapCenter.Name = "btnSetMapCenter";
             this.btnSetMapCenter.Size = new System.Drawing.Size(90, 25);
             this.btnSetMapCenter.TabIndex = 44;
@@ -994,21 +995,31 @@
             // 
             this.desiredT.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.desiredT.ForeColor = System.Drawing.Color.Black;
-            this.desiredT.Location = new System.Drawing.Point(189, 427);
+            this.desiredT.Location = new System.Drawing.Point(144, 427);
             this.desiredT.Name = "desiredT";
             this.desiredT.Size = new System.Drawing.Size(59, 18);
             this.desiredT.TabIndex = 69;
-            this.desiredT.Text = "Des T:";
+            this.desiredT.Text = "T:";
             this.desiredT.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // txtStartTheta
             // 
             this.txtStartTheta.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtStartTheta.Location = new System.Drawing.Point(224, 426);
+            this.txtStartTheta.Location = new System.Drawing.Point(165, 426);
             this.txtStartTheta.Name = "txtStartTheta";
             this.txtStartTheta.Size = new System.Drawing.Size(47, 20);
             this.txtStartTheta.TabIndex = 70;
             this.txtStartTheta.Text = "0";
+            // 
+            // btn_flytraj
+            // 
+            this.btn_flytraj.Location = new System.Drawing.Point(310, 424);
+            this.btn_flytraj.Name = "btn_flytraj";
+            this.btn_flytraj.Size = new System.Drawing.Size(75, 23);
+            this.btn_flytraj.TabIndex = 71;
+            this.btn_flytraj.Text = "FlyTrajectory";
+            this.btn_flytraj.UseVisualStyleBackColor = true;
+            this.btn_flytraj.Click += new System.EventHandler(this.btn_flytraj_Click);
             // 
             // JaguarCtrl
             // 
@@ -1016,6 +1027,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlLight;
             this.ClientSize = new System.Drawing.Size(1016, 698);
+            this.Controls.Add(this.btn_flytraj);
             this.Controls.Add(this.txtStartTheta);
             this.Controls.Add(this.desiredT);
             this.Controls.Add(this.lblTemp4);
@@ -1178,6 +1190,7 @@
         private System.Windows.Forms.Label label16;
         private System.Windows.Forms.Label desiredT;
         public System.Windows.Forms.TextBox txtStartTheta;
+        private System.Windows.Forms.Button btn_flytraj;
     }
 }
 
