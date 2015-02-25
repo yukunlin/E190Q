@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading;
 using System.IO;
@@ -18,6 +19,7 @@ namespace DrRobot.JaguarControl
         public double x_est, y_est, t_est;
         public double desiredX, desiredY, desiredT;
         public double desiredR;
+        public double _actRotRateL, _actRotRateR;
 
         public double _currentEncoderPulseL, _currentEncoderPulseR;
         public double _lastEncoderPulseL, _lastEncoderPulseR;
@@ -82,6 +84,8 @@ namespace DrRobot.JaguarControl
         private int _zeroCounterL = 0;
         private int _zeroCounterR = 0;
         private short zeroOutput = 16383;
+        public double _accumL = 0;
+        public double _accumR = 0;
 
         private LinkedList<double> _movingAvgValuesL;
         private LinkedList<double> _movingAvgValuesR;
@@ -135,6 +139,10 @@ namespace DrRobot.JaguarControl
             _x = 0;//initialX;
             _y = 0;//initialY;
             _theta = 0;//initialT;
+
+            // Initialize accumulation
+            _accumL = 0;
+            _accumR = 0;
 
             // Initialize state estimates
             x_est = 0;//initialX;
@@ -453,9 +461,9 @@ namespace DrRobot.JaguarControl
             
             short maxPosOutput = 32767;
 
-            double K_p = 3.5;
-            double K_i = 0.5;
-            double K_d = .2;
+            double K_p = 2.5;
+            double K_i = 0.0;
+            double K_d = 0.1;
 
             double deltaTs = _milliElapsed / 1000.0;
 
@@ -464,14 +472,14 @@ namespace DrRobot.JaguarControl
             double maxErr = 8000 / deltaTs;
             //_desiredRotRateL = _desiredRotRateR = 250;
 
-            double actRotRateL = _diffEncoderPulseL/deltaTs;
-            double actRotRateR = _diffEncoderPulseR / deltaTs;
+            _actRotRateL = _diffEncoderPulseL/deltaTs;
+            _actRotRateR = _diffEncoderPulseR / deltaTs;
 
-            Console.WriteLine("actRotRateL: {0}, actRotRateR: {1}", actRotRateL,actRotRateR);
+            Console.WriteLine("actRotRateL: {0}, actRotRateR: {1}", _actRotRateL,_actRotRateR);
             Console.WriteLine("desRotRateL: {0}, desRotRateR: {1}", _desiredRotRateL, _desiredRotRateR);
 
-            e_L = _desiredRotRateL - actRotRateL;
-            e_R = _desiredRotRateR + actRotRateR;
+            e_L = _desiredRotRateL - _actRotRateL;
+            e_R = _desiredRotRateR + _actRotRateR;
 
             e_sum_L = .9 * e_sum_L + e_L * deltaTs;
             e_sum_R = .9 * e_sum_R + e_R * deltaTs;
@@ -483,17 +491,29 @@ namespace DrRobot.JaguarControl
             double dErrR = movingAverage(_movingAvgDErrR, (e_R - e_R_last) / deltaTs, 5);
 
             u_L = ((K_p * e_L) + (K_i * e_sum_L) + (K_d * dErrL));
-            e_L_last = e_L;
-
             u_R = ((K_p * e_R) + (K_i * e_sum_R) + (K_d * dErrR));
+
             e_R_last = e_R;
+            e_L_last = e_L;
             // The following settings are used to help develop the controller in simulation.
             // They will be replaced when the actual jaguar is used.
             //motorSignalL = (short)(zeroOutput + desiredRotRateL * 100);// (zeroOutput + u_L);
             //motorSignalR = (short)(zeroOutput - desiredRotRateR * 100);//(zeroOutput - u_R);
 
-            motorSignalL += (short) u_L;
-            motorSignalR -= (short) u_R;
+            const double DEADBAND = 7000;
+
+            _accumL += u_L;
+            _accumR += u_R;
+
+            if (_desiredRotRateL == 0)
+                motorSignalL = zeroOutput;
+            else
+                motorSignalL = (short) (zeroOutput + Math.Sign(_desiredRotRateL)*DEADBAND + _accumL);
+
+            if (_desiredRotRateR == 0)
+                motorSignalR = zeroOutput;
+            else
+                motorSignalR = (short) (zeroOutput - Math.Sign(_desiredRotRateR)*DEADBAND - _accumR);
 
             motorSignalL = (short)Math.Min(maxPosOutput, Math.Max(0, (int)motorSignalL));
             motorSignalR = (short)Math.Min(maxPosOutput, Math.Max(0, (int)motorSignalR));
@@ -539,9 +559,13 @@ namespace DrRobot.JaguarControl
         public void TurnLoggingOn()
         {
             //int fileCnt= 0;
-            String date = DateTime.Now.Year.ToString() + "-" + DateTime.Now.Month.ToString() + "-" + DateTime.Now.Day.ToString() + "-" + DateTime.Now.Minute.ToString();
+            String date = DateTime.Now.Year.ToString() + "-" + DateTime.Now.Month.ToString() + "-" + DateTime.Now.Day.ToString() + "-" + DateTime.Now.Minute.ToString() + "-" + DateTime.Now.Second;
             ToString();
-            logFile = File.CreateText("JaguarData_" + date + ".txt");
+            logFile = File.CreateText("C:\\Users\\CAPCOM\\Desktop\\JaguarData_" + date + ".csv");
+            
+            var csvHeader = "time,x,y,theta,desX,desY,desT,desRotL,desRotR,actRotL,actRotR";
+            logFile.WriteLine(csvHeader);
+
             startTime = DateTime.Now;
             loggingOn = true;
         }
@@ -564,7 +588,14 @@ namespace DrRobot.JaguarControl
             {
                 TimeSpan ts = DateTime.Now - startTime;
                 time = ts.TotalSeconds;
-                 String newData = time.ToString() + " " + _x.ToString() + " " + _y.ToString() + " " + _theta.ToString() ;
+
+                var newData = String.Format(
+                    "{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10}",
+                    time, x_est, y_est, t_est,
+                    desiredX, desiredY, desiredT,
+                    _desiredRotRateL, _desiredRotRateR,
+                    _actRotRateL, _actRotRateR
+                    );
 
                 logFile.WriteLine(newData);
             }
@@ -650,7 +681,7 @@ namespace DrRobot.JaguarControl
 
             if (Math.Abs(rotateTheta) > threshold)
             {
-                double desiredW = Math.Abs(Kbeta * .5) * rotateTheta;
+                double desiredW = Math.Abs(Kbeta * .4) * rotateTheta;
 
                 // calculate desired wheel rotation rate
                 double rightV = (desiredV + desiredW * ROBOTRADIUS) / WHEELRADIUS;
@@ -720,13 +751,13 @@ namespace DrRobot.JaguarControl
 
             desiredT = boundAngle(rHead + Math.PI/2 + rotDes + 0.2);
 
-            rotateToPoint(.25, 0);
+            rotateToPoint(.3, 0);
         }
 
 
         private double limitMotorSpeed(double rightV, double leftV)
         {
-            var maxSpeed = 0.3;
+            var maxSpeed = 0.33;
             double leftRatio = Math.Max(1, Math.Abs(leftV) / maxSpeed);
             double rightRatio = Math.Max(1, Math.Abs(rightV) / maxSpeed);
 

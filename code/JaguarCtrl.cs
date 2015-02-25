@@ -1206,7 +1206,8 @@ namespace DrRobot.JaguarControl
             }
             controlMode = AUTONOMOUS;
             AUTOMODE = FLYTOPOINT;
-
+            navigation._accumL = 0;
+            navigation._accumR = 0;
 
         }
 
@@ -1230,6 +1231,8 @@ namespace DrRobot.JaguarControl
             }
             AUTOMODE = TRACKTRAJ;
             controlMode = AUTONOMOUS;
+            navigation._accumL = 0;
+            navigation._accumR = 0;
             
             
         }
@@ -1247,6 +1250,8 @@ namespace DrRobot.JaguarControl
             }
             AUTOMODE = CIRCLE;
             controlMode = AUTONOMOUS;
+            navigation._accumL = 0;
+            navigation._accumR = 0;
         }
 
 
