@@ -144,7 +144,12 @@ namespace DrRobot.JaguarControl
         public int experimentMode = SIMULATOR;
         public int MANUAL = 0;
         public int AUTONOMOUS = 1;
-        public bool trackTraj=false;
+
+        public int AUTOMODE = 0;
+        public int FLYTOPOINT = 0;
+        public int TRACKTRAJ = 1;
+        public int CIRCLE = 2;
+        
         public int controlMode = 0;
         private Thread sensorThread;
         public bool runSensorThread;
@@ -1200,7 +1205,9 @@ namespace DrRobot.JaguarControl
             {
             }
             controlMode = AUTONOMOUS;
-            trackTraj = false;
+            AUTOMODE = FLYTOPOINT;
+
+
         }
 
         # endregion
@@ -1221,10 +1228,25 @@ namespace DrRobot.JaguarControl
             catch
             {
             }
-            trackTraj = true;
+            AUTOMODE = TRACKTRAJ;
             controlMode = AUTONOMOUS;
             
             
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                navigation.desiredX = double.Parse(txtStartLat.Text);
+                navigation.desiredY = double.Parse(txtStartLong.Text);
+                navigation.desiredR = double.Parse(txtStartTheta.Text);
+            }
+            catch
+            {
+            }
+            AUTOMODE = CIRCLE;
+            controlMode = AUTONOMOUS;
         }
 
 
