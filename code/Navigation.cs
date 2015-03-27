@@ -83,7 +83,7 @@ namespace DrRobot.JaguarControl
         private double _lastDiffR = 0;
         private int _zeroCounterL = 0;
         private int _zeroCounterR = 0;
-        private short zeroOutput = 16383;
+        private const short ZEROOUTPUT = 16383;
         public double _accumL = 0;
         public double _accumR = 0;
 
@@ -167,8 +167,8 @@ namespace DrRobot.JaguarControl
             }
             else
             {
-                motorSignalL = zeroOutput;
-                motorSignalR = zeroOutput;
+                motorSignalL = ZEROOUTPUT;
+                motorSignalR = ZEROOUTPUT;
                 loggingOn = false;
             }
 
@@ -446,16 +446,6 @@ namespace DrRobot.JaguarControl
         }
 
 
-        /*
-        public void CalcMotorSignals()
-        {
-            motorSignalL = (short) (1.5*_desiredRotRateL);
-            motorSignalR = (short) (1.5*_desiredRotRateR);
-            Console.WriteLine("rotLDes: {0}, rotRDes: {1}", _desiredRotRateL, _desiredRotRateR);
-            Console.WriteLine("ML: {0}, MR: {1}", motorSignalL, motorSignalR);
-
-        }*/
-
         public void CalcMotorSignals()
         {
             
@@ -506,14 +496,14 @@ namespace DrRobot.JaguarControl
             _accumR += u_R;
 
             if (_desiredRotRateL == 0)
-                motorSignalL = zeroOutput;
+                motorSignalL = ZEROOUTPUT;
             else
-                motorSignalL = (short) (zeroOutput + Math.Sign(_desiredRotRateL)*DEADBAND + _accumL);
+                motorSignalL = (short) (ZEROOUTPUT + Math.Sign(_desiredRotRateL)*DEADBAND + _accumL);
 
             if (_desiredRotRateR == 0)
-                motorSignalR = zeroOutput;
+                motorSignalR = ZEROOUTPUT;
             else
-                motorSignalR = (short) (zeroOutput - Math.Sign(_desiredRotRateR)*DEADBAND - _accumR);
+                motorSignalR = (short) (ZEROOUTPUT - Math.Sign(_desiredRotRateR)*DEADBAND - _accumR);
 
             motorSignalL = (short)Math.Min(maxPosOutput, Math.Max(0, (int)motorSignalL));
             motorSignalR = (short)Math.Min(maxPosOutput, Math.Max(0, (int)motorSignalR));
