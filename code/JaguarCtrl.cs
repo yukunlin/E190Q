@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -47,11 +48,16 @@ namespace DrRobot.JaguarControl
         private static int yMax = paneHeight + yMin;
         private static int xCenter = xMin + paneWidth / 2;
         private static int yCenter = yMin + paneHeight / 2;
+        private static int constxCenter = xCenter;
+        private static int constyCenter = yCenter;
+
         private static Point oPoint = new Point(xMin, yMin);
         private static Pen blackPen = new Pen(Color.Black, 1);
         private static Pen whitePen = new Pen(Color.White, 10);
         private static Pen thinWhitePen = new Pen(Color.White, 1);
+        private static Pen pinkPen = new Pen(Color.White, 2);
         private static Pen goldPen = new Pen(Color.Gold, 1);
+        private static Pen greenPen = new Pen(Color.Green,5);
         private static Pen trackPen = new Pen(Brushes.LightGray);
         private static double cellWidth = 1.0; // in meters, mapResolution is in metersToPixels
         #endregion
@@ -209,8 +215,11 @@ namespace DrRobot.JaguarControl
 
                     UpdateFormEncoderData();
                 }
-                Animate();
-                Thread.Sleep(100);
+                lock (navigation.thisLock)
+                {
+                    Animate();
+                }
+                Thread.Sleep(50);
             }
         }
 
@@ -220,6 +229,25 @@ namespace DrRobot.JaguarControl
 
         private void Animate()
         {
+            
+            xCenter = (int)(constxCenter - navigation._x * mapResolution);
+            yCenter = (int)(constyCenter + navigation._y * mapResolution);
+            
+
+
+            /*
+            int yMinS = (int) (yMin - navigation.y_est*mapResolution);
+            int yMaxS = (int) (yMax - navigation.y_est*mapResolution);
+
+            int xMinS = (int) (xMin + navigation.x_est*mapResolution);
+            int xMaxS = (int) (xMax + navigation.x_est*mapResolution);
+
+            */
+
+            int yMinS = (int) (yMin );
+            int yMaxS = (int) (yMax );
+            int xMinS = (int) (xMin );
+            int xMaxS = (int) (xMax );
             // Create bitmap to write to            
             Bitmap gBuffer= new Bitmap(paneWidth, paneHeight);
             using (Graphics g = Graphics.FromImage(gBuffer))
@@ -238,15 +266,31 @@ namespace DrRobot.JaguarControl
                 {
                     float Xp = (float)(xCenter + i * mapResolution * cellWidth);
                     float Xm = (float)(xCenter - i * mapResolution * cellWidth);
-                    g.DrawLine(goldPen, Xp, yMin, Xp, yMax);
-                    g.DrawLine(goldPen, Xm, yMin, Xm, yMax);
+                    g.DrawLine(goldPen, Xp, yMinS, Xp, yMaxS);
+                    g.DrawLine(goldPen, Xm, yMinS, Xm, yMaxS);
                 }
                 for (int i = 0; i < numYLines; i++)
                 {
                     float Yp = (float)(yCenter + i * mapResolution * cellWidth);
                     float Ym = (float)(yCenter - i * mapResolution * cellWidth);
-                    g.DrawLine(goldPen, xMin, Yp, xMax, Yp);
-                    g.DrawLine(goldPen, xMin, Ym, xMax, Ym);
+                    g.DrawLine(goldPen, xMinS, Yp, xMaxS, Yp);
+                    g.DrawLine(goldPen, xMinS, Ym, xMaxS, Ym);
+                }
+
+                // Draw walls
+                int sizeWall = navigation.map.numMapSegments;
+                for (int i = 0; i < sizeWall; i++)
+                {
+                    double x1 = navigation.map.mapSegmentCorners[i, 0, 0];
+                    double y1 = navigation.map.mapSegmentCorners[i, 0, 1];
+                    double x2 = navigation.map.mapSegmentCorners[i, 1, 0];
+                    double y2 = navigation.map.mapSegmentCorners[i, 1, 1];
+
+                    int x1s = (int) Math.Round(xCenter + x1*mapResolution);
+                    int y1s = (int) Math.Round(yCenter - y1*mapResolution);
+                    int x2s = (int) Math.Round(xCenter + x2*mapResolution);
+                    int y2s = (int) Math.Round(yCenter - y2*mapResolution);
+                    g.DrawLine(greenPen, x1s, y1s, x2s, y2s);
                 }
 
                 // Draw Axis
@@ -263,16 +307,42 @@ namespace DrRobot.JaguarControl
                 g.DrawLine(thinWhitePen, (float)(xCenter + 0.1 * mapResolution), (float)(yCenter - 1.4 * mapResolution),
                     (float)(xCenter + 0.0 * mapResolution), (float)(yCenter - 1.5 * mapResolution));
 
-
+                // UPDATE WITH PF X_EST, Y_EST?????????????????????????????????????????
                 // Draw Robot
                 int xShift = (int)(mapResolution * navigation._x);
                 int yShift = (int)(mapResolution * navigation._y);
+
+                // Draw laser range finder
+                double startAngle = startAng - Math.PI/2;
+                var listOfXs = new List<double>();
+                var listOfYs = new List<double>();
+
+                for (int i = 0; i < navigation.LaserData.Length; i = i + navigation.pf.SENSORSTEP)
+                {
+                    var angle = startAngle + i*stepAng;
+                    listOfXs.Add(navigation.LaserData[i] / 1000.0 * Math.Cos(angle) * mapResolution);
+                    listOfYs.Add(navigation.LaserData[i] / 1000.0 * Math.Sin(angle) * mapResolution);
+                }
+
+                var heading = navigation._theta;
+                // rotate end points by robot heading
+                for (int i = 0; i < listOfXs.Count; i++)
+                {
+                    var newX = listOfXs[i]*Math.Cos(heading) - listOfYs[i]*Math.Sin(heading);
+                    var newY = listOfXs[i]*Math.Sin(heading) + listOfYs[i]*Math.Cos(heading);
+
+                    g.DrawLine(pinkPen, (int)(xCenter + xShift),        (int)(yCenter - yShift),
+                                        (int)(xCenter + xShift + newX), (int)(yCenter - newY - yShift) );
+
+                }
+
                 double robotDiagnol = 0.25 * mapResolution;
                 for (int i = 0; i < 4; i++)
                 {
                     robotCorners[i].X = (int)(xCenter + xShift + robotDiagnol * Math.Cos(navigation._theta + robotCornerAngles[i]));
                     robotCorners[i].Y = (int)(yCenter - yShift - robotDiagnol * Math.Sin(navigation._theta + robotCornerAngles[i]));
                 }
+
                 g.FillPolygon(Brushes.DarkSlateGray, robotCorners);
             
                 // Draw Tracks
@@ -294,6 +364,59 @@ namespace DrRobot.JaguarControl
                 int X_laser = (int)(xCenter + xShift + laserDiagonal * Math.Cos(navigation._theta) - laserDiameter / 2);
                 int Y_laser = (int)(yCenter - yShift - laserDiagonal * Math.Sin(navigation._theta) - laserDiameter / 2);
                 g.FillEllipse(Brushes.LightGray, X_laser, Y_laser, laserDiameter, laserDiameter);
+
+
+                // Draw particles
+                double avgWeights = 1.0 / navigation.numParticles;
+
+                foreach (var particle in navigation.pf.particles)
+                {
+                    int xPar = (int) (xCenter + particle.x*mapResolution);
+                    int yPar = (int) (yCenter - particle.y*mapResolution);
+                    int xLine = (int) (xCenter + (0.1*Math.Cos(particle.t) + particle.x)*mapResolution);
+                    int yLine = (int) (yCenter - (0.1*Math.Sin(particle.t) + particle.y)*mapResolution);
+
+                    double radius = 0.04;
+
+                    int xCorner = (int) (xCenter + (particle.x - radius) *mapResolution);
+                    int yCorner = (int) (yCenter - (particle.y + radius)*mapResolution);
+
+
+                    // TODO: CHECK COLORING SCHEME
+                    int blueN = (int) Math.Min(avgWeights/particle.w * 20, 255) ;
+
+                    var colors = Color.FromArgb(255-blueN/2, 0, blueN);
+                    var pen = new Pen(colors, 2);
+                    var brush = new SolidBrush(colors);
+
+                    g.DrawLine(pen, xLine, yLine, xPar, yPar);
+                    g.FillEllipse(brush, xCorner, yCorner, (int) (2*radius*mapResolution), (int) (2*radius*mapResolution));
+                }
+
+                // Draw state estimate
+                double[] stateEst = navigation.pf.EstimatedState();
+                double xEst = stateEst[0];
+                double yEst = stateEst[1];
+                double tEst = stateEst[2];
+
+                int xParEst = (int)(xCenter + xEst * mapResolution);
+                int yParEst = (int)(yCenter - yEst * mapResolution);
+                int xLineEst = (int)(xCenter + (0.3 * Math.Cos(tEst) + xEst) * mapResolution);
+                int yLineEst = (int)(yCenter - (0.3 * Math.Sin(tEst) + yEst) * mapResolution);
+
+                double radEst = 0.1;
+
+                int xCorEst = (int)(xCenter + (xEst - radEst) * mapResolution);
+                int yCorEst = (int)(yCenter - (yEst + radEst) * mapResolution);
+
+                var colorsEst = Color.GreenYellow;
+                var penEst = new Pen(colorsEst, 3);
+
+                Pen drawMag = new Pen(Color.GreenYellow);
+                g.DrawLine(penEst, xLineEst, yLineEst, xParEst, yParEst);
+                g.DrawEllipse(penEst, xCorEst, yCorEst, (int)(2 * radEst * mapResolution), (int)(2 * radEst * mapResolution));
+
+
 
                 // Draw the bitmap to the form
                 this.CreateGraphics().DrawImageUnscaled(gBuffer, 0, 0);
@@ -1001,8 +1124,6 @@ namespace DrRobot.JaguarControl
         {
             lblCOG.Text = gpsRecord.cog.ToString();
             lblVOG.Text = gpsRecord.vog .ToString("0.00");
-            lblLat .Text = gpsRecord .latitude.ToString ();
-            lblLong.Text = gpsRecord .longitude.ToString ();
 
             if (gpsRecord.qi == 0)
             {
@@ -1252,6 +1373,11 @@ namespace DrRobot.JaguarControl
             controlMode = AUTONOMOUS;
             navigation._accumL = 0;
             navigation._accumR = 0;
+        }
+
+        private void label15_Click(object sender, EventArgs e)
+        {
+
         }
 
 

@@ -32,18 +32,12 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(JaguarCtrl));
             this.groupBoxGPSIMU = new System.Windows.Forms.GroupBox();
             this.lblBatVol = new System.Windows.Forms.Label();
-            this.realJaguar = new AxDRROBOTSentinelCONTROLLib.AxDDrRobotSentinel();
-            this.pictureBoxIMUGPS = new System.Windows.Forms.PictureBox();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.textBoxGPSRCV = new System.Windows.Forms.TextBox();
             this.textBoxRCV = new System.Windows.Forms.TextBox();
             this.lblGPSQI = new System.Windows.Forms.Label();
             this.label46 = new System.Windows.Forms.Label();
-            this.lblLat = new System.Windows.Forms.Label();
-            this.label15 = new System.Windows.Forms.Label();
-            this.label17 = new System.Windows.Forms.Label();
-            this.lblLong = new System.Windows.Forms.Label();
             this.label33 = new System.Windows.Forms.Label();
             this.lblVOG = new System.Windows.Forms.Label();
             this.label18 = new System.Windows.Forms.Label();
@@ -111,9 +105,13 @@
             this.txtStartTheta = new System.Windows.Forms.TextBox();
             this.btn_flytraj = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
+            this.pictureBoxIMUGPS = new System.Windows.Forms.PictureBox();
+            this.realJaguar = new AxDRROBOTSentinelCONTROLLib.AxDDrRobotSentinel();
+            this.label15 = new System.Windows.Forms.Label();
+            this.label17 = new System.Windows.Forms.Label();
+            this.label19 = new System.Windows.Forms.Label();
+            this.label20 = new System.Windows.Forms.Label();
             this.groupBoxGPSIMU.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.realJaguar)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxIMUGPS)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxGyroZ)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxGyroY)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxGyroX)).BeginInit();
@@ -129,6 +127,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.trackBarForwardPower)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxStuckDetect)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxIMUGPS)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.realJaguar)).BeginInit();
             this.SuspendLayout();
             // 
             // groupBoxGPSIMU
@@ -142,10 +142,6 @@
             this.groupBoxGPSIMU.Controls.Add(this.textBoxRCV);
             this.groupBoxGPSIMU.Controls.Add(this.lblGPSQI);
             this.groupBoxGPSIMU.Controls.Add(this.label46);
-            this.groupBoxGPSIMU.Controls.Add(this.lblLat);
-            this.groupBoxGPSIMU.Controls.Add(this.label15);
-            this.groupBoxGPSIMU.Controls.Add(this.label17);
-            this.groupBoxGPSIMU.Controls.Add(this.lblLong);
             this.groupBoxGPSIMU.Controls.Add(this.label33);
             this.groupBoxGPSIMU.Controls.Add(this.lblVOG);
             this.groupBoxGPSIMU.Controls.Add(this.label18);
@@ -176,27 +172,6 @@
             this.lblBatVol.TabIndex = 43;
             this.lblBatVol.Text = "0";
             this.lblBatVol.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // realJaguar
-            // 
-            this.realJaguar.Enabled = true;
-            this.realJaguar.Location = new System.Drawing.Point(173, 21);
-            this.realJaguar.Name = "realJaguar";
-            this.realJaguar.OcxState = ((System.Windows.Forms.AxHost.State)(resources.GetObject("realJaguar.OcxState")));
-            this.realJaguar.Size = new System.Drawing.Size(18, 30);
-            this.realJaguar.TabIndex = 85;
-            this.realJaguar.Visible = false;
-            this.realJaguar.StandardSensorEvent += new System.EventHandler(this.realJaguar_StandardSensorEvent);
-            this.realJaguar.MotorSensorEvent += new System.EventHandler(this.realJaguar_MotorSensorEvent);
-            this.realJaguar.CustomSensorEvent += new System.EventHandler(this.realJaguar_CustomSensorEvent);
-            // 
-            // pictureBoxIMUGPS
-            // 
-            this.pictureBoxIMUGPS.Location = new System.Drawing.Point(211, 21);
-            this.pictureBoxIMUGPS.Name = "pictureBoxIMUGPS";
-            this.pictureBoxIMUGPS.Size = new System.Drawing.Size(38, 32);
-            this.pictureBoxIMUGPS.TabIndex = 86;
-            this.pictureBoxIMUGPS.TabStop = false;
             // 
             // label2
             // 
@@ -258,52 +233,6 @@
             this.label46.TabIndex = 78;
             this.label46.Text = "GPS Quality:";
             this.label46.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // lblLat
-            // 
-            this.lblLat.BackColor = System.Drawing.Color.White;
-            this.lblLat.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblLat.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblLat.Location = new System.Drawing.Point(89, 16);
-            this.lblLat.Name = "lblLat";
-            this.lblLat.Size = new System.Drawing.Size(78, 17);
-            this.lblLat.TabIndex = 71;
-            this.lblLat.Text = "0";
-            this.lblLat.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // label15
-            // 
-            this.label15.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label15.ForeColor = System.Drawing.Color.Black;
-            this.label15.Location = new System.Drawing.Point(31, 15);
-            this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(55, 18);
-            this.label15.TabIndex = 70;
-            this.label15.Text = "Latitude:";
-            this.label15.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // label17
-            // 
-            this.label17.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label17.ForeColor = System.Drawing.Color.Black;
-            this.label17.Location = new System.Drawing.Point(17, 35);
-            this.label17.Name = "label17";
-            this.label17.Size = new System.Drawing.Size(69, 18);
-            this.label17.TabIndex = 72;
-            this.label17.Text = "Longtitude:";
-            this.label17.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // lblLong
-            // 
-            this.lblLong.BackColor = System.Drawing.Color.White;
-            this.lblLong.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblLong.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblLong.Location = new System.Drawing.Point(89, 36);
-            this.lblLong.Name = "lblLong";
-            this.lblLong.Size = new System.Drawing.Size(78, 17);
-            this.lblLong.TabIndex = 73;
-            this.lblLong.Text = "0";
-            this.lblLong.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // label33
             // 
@@ -744,7 +673,7 @@
             // trackBarTurnPower
             // 
             this.trackBarTurnPower.BackColor = System.Drawing.Color.DimGray;
-            this.trackBarTurnPower.Location = new System.Drawing.Point(284, 454);
+            this.trackBarTurnPower.Location = new System.Drawing.Point(284, 467);
             this.trackBarTurnPower.Maximum = 100;
             this.trackBarTurnPower.Minimum = -100;
             this.trackBarTurnPower.Name = "trackBarTurnPower";
@@ -756,7 +685,7 @@
             // trackBarForwardPower
             // 
             this.trackBarForwardPower.BackColor = System.Drawing.Color.DimGray;
-            this.trackBarForwardPower.Location = new System.Drawing.Point(9, 454);
+            this.trackBarForwardPower.Location = new System.Drawing.Point(9, 467);
             this.trackBarForwardPower.Maximum = 100;
             this.trackBarForwardPower.Minimum = -100;
             this.trackBarForwardPower.Name = "trackBarForwardPower";
@@ -928,7 +857,7 @@
             // 
             this.buttonStop.BackColor = System.Drawing.Color.Silver;
             this.buttonStop.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.buttonStop.Location = new System.Drawing.Point(217, 454);
+            this.buttonStop.Location = new System.Drawing.Point(217, 467);
             this.buttonStop.Name = "buttonStop";
             this.buttonStop.Size = new System.Drawing.Size(59, 45);
             this.buttonStop.TabIndex = 64;
@@ -1032,12 +961,82 @@
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
+            // pictureBoxIMUGPS
+            // 
+            this.pictureBoxIMUGPS.Location = new System.Drawing.Point(211, 21);
+            this.pictureBoxIMUGPS.Name = "pictureBoxIMUGPS";
+            this.pictureBoxIMUGPS.Size = new System.Drawing.Size(38, 32);
+            this.pictureBoxIMUGPS.TabIndex = 86;
+            this.pictureBoxIMUGPS.TabStop = false;
+            // 
+            // realJaguar
+            // 
+            this.realJaguar.Enabled = true;
+            this.realJaguar.Location = new System.Drawing.Point(173, 21);
+            this.realJaguar.Name = "realJaguar";
+            this.realJaguar.OcxState = ((System.Windows.Forms.AxHost.State)(resources.GetObject("realJaguar.OcxState")));
+            this.realJaguar.Size = new System.Drawing.Size(18, 30);
+            this.realJaguar.TabIndex = 85;
+            this.realJaguar.Visible = false;
+            this.realJaguar.StandardSensorEvent += new System.EventHandler(this.realJaguar_StandardSensorEvent);
+            this.realJaguar.MotorSensorEvent += new System.EventHandler(this.realJaguar_MotorSensorEvent);
+            this.realJaguar.CustomSensorEvent += new System.EventHandler(this.realJaguar_CustomSensorEvent);
+            // 
+            // label15
+            // 
+            this.label15.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label15.ForeColor = System.Drawing.Color.Black;
+            this.label15.Location = new System.Drawing.Point(145, 449);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(66, 18);
+            this.label15.TabIndex = 87;
+            this.label15.Text = "Forward";
+            this.label15.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.label15.Click += new System.EventHandler(this.label15_Click);
+            // 
+            // label17
+            // 
+            this.label17.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label17.ForeColor = System.Drawing.Color.Black;
+            this.label17.Location = new System.Drawing.Point(11, 449);
+            this.label17.Name = "label17";
+            this.label17.Size = new System.Drawing.Size(66, 18);
+            this.label17.TabIndex = 88;
+            this.label17.Text = "Backward";
+            this.label17.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label19
+            // 
+            this.label19.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label19.ForeColor = System.Drawing.Color.Black;
+            this.label19.Location = new System.Drawing.Point(286, 449);
+            this.label19.Name = "label19";
+            this.label19.Size = new System.Drawing.Size(66, 18);
+            this.label19.TabIndex = 89;
+            this.label19.Text = "Left";
+            this.label19.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label20
+            // 
+            this.label20.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label20.ForeColor = System.Drawing.Color.Black;
+            this.label20.Location = new System.Drawing.Point(416, 448);
+            this.label20.Name = "label20";
+            this.label20.Size = new System.Drawing.Size(66, 18);
+            this.label20.TabIndex = 90;
+            this.label20.Text = "Right";
+            this.label20.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
             // JaguarCtrl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlLight;
             this.ClientSize = new System.Drawing.Size(1016, 698);
+            this.Controls.Add(this.label20);
+            this.Controls.Add(this.label19);
+            this.Controls.Add(this.label17);
+            this.Controls.Add(this.label15);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.btn_flytraj);
             this.Controls.Add(this.txtStartTheta);
@@ -1097,8 +1096,6 @@
             this.Shown += new System.EventHandler(this.JaguarCtrl_Shown);
             this.groupBoxGPSIMU.ResumeLayout(false);
             this.groupBoxGPSIMU.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.realJaguar)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxIMUGPS)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxGyroZ)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxGyroY)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxGyroX)).EndInit();
@@ -1114,6 +1111,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.trackBarForwardPower)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxStuckDetect)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxIMUGPS)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.realJaguar)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1129,10 +1128,6 @@
         private System.Windows.Forms.PictureBox pictureBoxAccelY;
         private System.Windows.Forms.PictureBox pictureBoxAccelX;
         private System.Windows.Forms.Label label46;
-        private System.Windows.Forms.Label lblLat;
-        private System.Windows.Forms.Label label15;
-        private System.Windows.Forms.Label label17;
-        private System.Windows.Forms.Label lblLong;
         private System.Windows.Forms.Label label33;
         private System.Windows.Forms.Label lblVOG;
         private System.Windows.Forms.Label label18;
@@ -1143,8 +1138,7 @@
         private System.Windows.Forms.TextBox textBoxRCV;
         private System.Windows.Forms.Label label2;
         private AxAXISMEDIACONTROLLib.AxAxisMediaControl myAMC;
-        //public AxDRROBOTSentinelCONTROLLib.AxDDrRobotSentinel realJaguar; 
-        public AxDRROBOTSentinelCONTROLLib.AxDDrRobotSentinel realJaguar;             //-wf
+        //public AxDRROBOTSentinelCONTROLLib.AxDDrRobotSentinel realJaguar;              //-wf
         public AxDDrRobotSentinel_Simulator simulatedJaguar;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.PictureBox pictureBoxSensor;
@@ -1176,7 +1170,6 @@
         private System.Windows.Forms.TrackBar trackBarTurnPower;
         private System.Windows.Forms.TrackBar trackBarForwardPower;
         private System.Windows.Forms.Button btnLaserScan;
-        private System.Windows.Forms.PictureBox pictureBoxIMUGPS;
         private System.Windows.Forms.ImageList imageList1;
         private System.Windows.Forms.Timer tmrDisplay;
         private System.Windows.Forms.PictureBox pictureBoxLaser;
@@ -1204,6 +1197,12 @@
         public System.Windows.Forms.TextBox txtStartTheta;
         private System.Windows.Forms.Button btn_flytraj;
         private System.Windows.Forms.Button button1;
+        public AxDRROBOTSentinelCONTROLLib.AxDDrRobotSentinel realJaguar;
+        private System.Windows.Forms.PictureBox pictureBoxIMUGPS;
+        private System.Windows.Forms.Label label15;
+        private System.Windows.Forms.Label label17;
+        private System.Windows.Forms.Label label19;
+        private System.Windows.Forms.Label label20;
     }
 }
 

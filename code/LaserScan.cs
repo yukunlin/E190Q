@@ -41,8 +41,8 @@ namespace DrRobot.JaguarControl
         private byte[] dataArray = new Byte[DATALEN];
         private long[] disDataLast = new long[DISDATALEN];
         //this program will get data from -120 to +120. (G04572401) 724-44 = 680;
-        private const double startAng = -31.5 / 180 * Math.PI; //27.0 / 180 * Math.PI;
-        private const double stepAng = 0.3529 / 180 * Math.PI * 3;//2.1 / 180 * Math.PI;    cluster = 03
+        public const double startAng = -31.5 / 180 * Math.PI; //27.0 / 180 * Math.PI;
+        public const double stepAng = 0.3529 / 180 * Math.PI * 3;//2.1 / 180 * Math.PI;    cluster = 03
         private const double ratio = 25;
         private const int START_X = 0;
         private const int START_Y = 120;
@@ -528,6 +528,7 @@ namespace DrRobot.JaguarControl
 
             Array.Copy(disData, disDataLast, DISDATALEN);
             Array.Copy(disData, navigation.LaserData, DISDATALEN); // -wf
+            navigation.newLaserData = true;
             //Copy laser scanner data into buffer visible to robot logic
 
         }
