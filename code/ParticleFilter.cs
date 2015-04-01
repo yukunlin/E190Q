@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using MathNet.Numerics.Distributions;
+using MathNet.Numerics.Providers.LinearAlgebra;
 using MathNet.Numerics.Statistics;
 using MathNet.Numerics.Integration;
 
@@ -19,8 +20,8 @@ namespace DrRobot.JaguarControl
         public Navigation n;
         public Random rand;
         private double scaleDist = 0.2;
-        private double baseDist = 0.005;
-        private double scaleAngle = 0.1;
+        private double baseDist = 0.001;
+        private double scaleAngle = 0.15;
         private double baseAngle = 0.005;
 
         private double alphaFast = 0.4;
@@ -28,12 +29,10 @@ namespace DrRobot.JaguarControl
 
         private double wslow = 0.000000000000000000000000000000000000000000000001;
         private double wfast = 0.000000000000000000000000000000000000000000000001;
+        private Normal dist;
 
 
-        private double SD = 1;
-        /////////////////////////////////////////////////////////////////////////////////////////// 
-        //TODO: CHANGE TO LARGE NUMBER TO GET ONE BEAM, ALSO REDUCE TO ONE PARTICLE
-        /////////////////////////////////////////////////////////////////////////////////////////// 
+        private double SD = .5; 
         public int SENSORSTEP = 15;
 
         public ParticleFilter(int numParticles, Navigation n, Map m)
@@ -42,13 +41,13 @@ namespace DrRobot.JaguarControl
             this.n = n;
             this.m = m;
             rand = new Random();
-
+            dist = new Normal(0, SD);
             // randomly assigns particle location
             for (int i = 0; i < numParticles; i++)
             {
 
                 double x = ContinuousUniform.Sample(rand, m.minX, m.maxX);
-                double y = ContinuousUniform.Sample(rand, m.minY, m.maxX);
+                double y = ContinuousUniform.Sample(rand, m.minY, m.maxY);
                 double t = ContinuousUniform.Sample(rand, -Math.PI, Math.PI);
                 
                 particles[i] = new Particle(x, y, t);
@@ -77,7 +76,13 @@ namespace DrRobot.JaguarControl
             // abridged laser scan data
             for (int i = 0; i < laserData.Length; i = i + SENSORSTEP)
             {
-                laserAbridged.Add(laserData[i]/1000.0); // converted to meters
+                var distance = laserData[i]/1000.0;
+                if (laserData[i] < 250)
+                {
+                    distance = Map.MAXLASERDISTANCE;
+                }
+                
+                laserAbridged.Add(distance); // converted to meters
                 laserAngles.Add(n.laserAngles[i] - Math.PI / 2 );
             }
 
@@ -100,23 +105,10 @@ namespace DrRobot.JaguarControl
             for (int i = 0; i < laserAngles.Count; i++)
             {
                 error = expectedWallDist[i] - laserAbridged[i];
-                if (laserAbridged[i] == Map.MAXLASERDISTANCE)
-                {
-                    //make normal distribution
-                    var dist = new Normal(0, SD);
-                    var wPar = SimpsonRule.IntegrateComposite(dist.Density, error - intThres, error + intThres, 10);
 
-                    weightPar = wPar + minWeight;
-                }
+                var wPar = NewtonCotesTrapeziumRule.IntegrateTwoPoint(dist.Density, error - intThres, error + intThres);
 
-                else
-                {
-                    //make normal distribution
-                    var dist = new Normal(0, SD);
-                    var wPar = SimpsonRule.IntegrateComposite(dist.Density, error - intThres, error + intThres, 10);
-
-                    weightPar = wPar + minWeight;
-                }
+                weightPar = wPar + minWeight;
 
                 productWeight = productWeight * weightPar;
             }
@@ -135,7 +127,6 @@ namespace DrRobot.JaguarControl
             double randProba = Math.Max(0, 1.0 - wfast/wslow);
             //SD = 0.1 + 0.7*randProba; // Scale sigma
 
-            Console.WriteLine("SD: {0}", SD);
             for (int m = 1; m <= particles.Count(); m++)
             {
                 double u = r + (m - 1.0)/particles.Count();
@@ -146,18 +137,35 @@ namespace DrRobot.JaguarControl
                 }
                 double dice = ContinuousUniform.Sample(rand, 0, 1);
 
-                if (dice <= randProba)
+                if (dice <= randProba) //TODO: ENABLE AMCL
+               // if (false)
                 {
                     double radSd = 10;
                     double thetaSd = 0.707;
 
-                    double randX = Normal.Sample(rand, particles[i-1].x, radSd);
-                    double randY = Normal.Sample(rand, particles[i-1].y, radSd);
-                    double randt = ContinuousUniform.Sample(rand, -Math.PI, Math.PI);
+                    int randNum = rand.Next(0,2);
 
-                    Particle p = new Particle(randX, randY, randt);
-                    p.w = 0.000001;
-                    resamplePar[m-1] = p;
+                    if (randNum == 0) // same heading
+                    {
+                        double randX = Normal.Sample(rand, particles[i - 1].x, radSd/2);
+                        double randY = Normal.Sample(rand, particles[i - 1].y, radSd/2);
+                        double randt = Normal.Sample(rand, particles[i - 1].t, 0.2);
+
+                        Particle p = new Particle(randX, randY, randt);
+                        p.w = 0.000001;
+                        resamplePar[m - 1] = p;
+                    }
+                    else
+                    {
+                        double randX = Normal.Sample(rand, particles[i - 1].x, radSd);
+                        double randY = Normal.Sample(rand, particles[i - 1].y, radSd);
+                        double randt = ContinuousUniform.Sample(rand, -Math.PI, Math.PI);
+
+
+                        Particle p = new Particle(randX, randY, randt);
+                        p.w = 0.000001;
+                        resamplePar[m - 1] = p;
+                    }
                 }
                 else
                 {
@@ -179,13 +187,11 @@ namespace DrRobot.JaguarControl
                 WeighParticle(i);
                 weightAccum += particles[i].w;
             }
-
             double wAvg = weightAccum/particles.Length;
             wslow = wslow + alphaSlow*(wAvg - wslow);
             wfast = wfast + alphaFast*(wAvg - wfast);
 
             double scalingFactor = 1.0 / weightAccum;
-            
             // normalize particle weights
             for (int i = 0; i < particles.Length; i++)
             {
@@ -193,6 +199,20 @@ namespace DrRobot.JaguarControl
             }
 
             Resample();
+
+            weightAccum = 0;
+            for (int i = 0; i < particles.Length; i++)
+            {
+                weightAccum += particles[i].w;
+            }
+
+            scalingFactor = 1.0 / weightAccum;
+
+            // normalize particle weights, again
+            for (int i = 0; i < particles.Length; i++)
+            {
+                particles[i].w *= scalingFactor;
+            }
         }
 
 
@@ -200,14 +220,20 @@ namespace DrRobot.JaguarControl
         {
             double xAvg = 0;
             double yAvg = 0;
-            double tAvg = 0;
+            double tAvgX = 0;
+            double tAvgY = 0;
+            double tAvg;
 
             foreach (Particle par in particles)
             {
                 xAvg += par.x*par.w;
                 yAvg += par.y*par.w;
-                tAvg += par.t*par.w;
+                //tAvg += par.t*par.w;
+                tAvgX += Math.Cos(par.t)*par.w;
+                tAvgY += Math.Sin(par.t)*par.w;
             }
+
+            tAvg = Math.Atan2(tAvgY, tAvgX);
 
             double[] estState = {xAvg, yAvg, tAvg};
 

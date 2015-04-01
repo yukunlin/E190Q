@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.IO;
+using System.Xml.Schema;
+using MathNet.Numerics.Statistics;
 
 namespace DrRobot.JaguarControl
 {
@@ -42,7 +44,7 @@ namespace DrRobot.JaguarControl
         public bool runThread = true;
         public bool loggingOn;
         StreamWriter logFile;
-        public int deltaT = 80;
+        public int deltaT = 20;
         private static int encoderMax = 32767;
         public int PULSESPERROTATION = 190;
         public double WHEELRADIUS = 0.089;
@@ -259,7 +261,7 @@ namespace DrRobot.JaguarControl
                     // Update Sensor Readings
                     UpdateSensorMeasurements();
 
-                    // Determine the change of robot position, orientation (lab 2)	
+                    // Determine the change of robot position, orientation (lab 2)
                     MotionPrediction();
 
                     // Update the global state of the robot - x,y,t (lab 2)
@@ -271,7 +273,6 @@ namespace DrRobot.JaguarControl
 
                     // Estimate the global state of the robot -x_est, y_est, t_est (lab 4)
                     LocalizeEstWithParticleFilter();
-
 
                     // If using the point tracker, call the function
                     if (jaguarControl.controlMode == jaguarControl.AUTONOMOUS)
@@ -510,7 +511,7 @@ namespace DrRobot.JaguarControl
             //motorSignalL = (short)(zeroOutput + desiredRotRateL * 100);// (zeroOutput + u_L);
             //motorSignalR = (short)(zeroOutput - desiredRotRateR * 100);//(zeroOutput - u_R);
 
-            const double DEADBAND = 7000;
+            const double DEADBAND = 7500;
 
             _accumL += u_L;
             _accumR += u_R;
@@ -564,9 +565,11 @@ namespace DrRobot.JaguarControl
             //int fileCnt= 0;
             String date = DateTime.Now.Year.ToString() + "-" + DateTime.Now.Month.ToString() + "-" + DateTime.Now.Day.ToString() + "-" + DateTime.Now.Minute.ToString();
             ToString();
-            logFile = File.CreateText("JaguarData_" + date + ".txt");
+            logFile = File.CreateText(@"C:\Users\CAPCOM\Desktop\190_lab4_data\" + "JaguarData_" + date + ".csv");
             startTime = DateTime.Now;
             loggingOn = true;
+            String header = "time, x odom, y odom, t odom, x st est, y st est, t st est, x Std, y Std, t Std ";
+            logFile.WriteLine(header);
         }
 
         // This function is called from a dialogue window "Record" button
@@ -584,13 +587,45 @@ namespace DrRobot.JaguarControl
         private void LogData()
         {
             if (loggingOn)
-            {
+            {   
+                double[] stdSpread = SpreadData();
+                double xStd = stdSpread[0];
+                double yStd = stdSpread[1];
+                double tStd = stdSpread[2];
+
                 TimeSpan ts = DateTime.Now - startTime;
                 time = ts.TotalSeconds;
-                 String newData = time.ToString() + " " + _x.ToString() + " " + _y.ToString() + " " + _theta.ToString() ;
+                 String newData = time.ToString() + ", " + _x.ToString() + ", " + _y.ToString() + ", " +
+                     _theta.ToString() + ", " + x_est.ToString() + ", " + y_est.ToString() + ", " + t_est.ToString() 
+                     + ", " + xStd.ToString() + ", " + yStd.ToString() + ", " + tStd.ToString();
 
                 logFile.WriteLine(newData);
             }
+        }
+
+        private double[] SpreadData()
+        {
+            
+            double[] x = new double[numParticles];
+            double[] y = new double[numParticles];
+            double[] t = new double[numParticles];
+            for (int i = 0; i < numParticles; i++)
+            {
+                x[i] = pf.particles[i].x;
+                y[i] = pf.particles[i].y;
+                t[i] = pf.particles[i].t;
+            }
+            var statisticsX = new DescriptiveStatistics(x);
+            var statisticsY = new DescriptiveStatistics(y);
+            var statisticsT = new DescriptiveStatistics(t);
+
+            double[] stdSpread = new double[3];
+
+            stdSpread[0] = statisticsX.StandardDeviation;
+            stdSpread[1] = statisticsY.StandardDeviation;
+            stdSpread[2] = statisticsT.StandardDeviation;
+
+            return stdSpread;
         }
         #endregion
 
@@ -670,13 +705,13 @@ namespace DrRobot.JaguarControl
             //double rotateX = headingX*Math.Cos(-t_est) - headingY*Math.Sin(-t_est);
             //double rotateY = headingX*Math.Sin(-t_est) + headingY*Math.Cos(-t_est);
 
-            double rotateX = headingX * Math.Cos(-_theta) - headingY * Math.Sin(-_theta);
-            double rotateY = headingX * Math.Sin(-_theta) + headingY * Math.Cos(-_theta);
+            double rotateX = headingX * Math.Cos(-t_est) - headingY * Math.Sin(-t_est);
+            double rotateY = headingX * Math.Sin(-t_est) + headingY * Math.Cos(-t_est);
             double rotateTheta = Math.Atan2(rotateY, rotateX);
 
             if (Math.Abs(rotateTheta) > threshold)
             {
-                double desiredW = Math.Abs(Kbeta * .4) * rotateTheta;
+                double desiredW = Math.Abs(Kbeta * .1) * rotateTheta;
 
                 // calculate desired wheel rotation rate
                 double rightV = (desiredV + desiredW * ROBOTRADIUS) / WHEELRADIUS;
@@ -929,7 +964,7 @@ namespace DrRobot.JaguarControl
             {
                 pf.Correct();
             }
-            
+
             var estState = pf.EstimatedState();
             x_est = estState[0];
             y_est = estState[1];

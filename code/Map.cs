@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -11,10 +12,9 @@ namespace DrRobot.JaguarControl
         public double[,,] mapSegmentCorners;
         public double minX, maxX, minY, maxY;
 
-        public const double MAXLASERDISTANCE = 4;
+        public const double MAXLASERDISTANCE = 5.6;
         private double[] slopes;
         private double[] segmentSizes;
-        private double[] intercepts;
 
         private double minWorkspaceX = -10;
         private double maxWorkspaceX =  10;
@@ -24,59 +24,29 @@ namespace DrRobot.JaguarControl
         public Map()
         {
 
-	        // This is hard coding at its worst. Just edit the file to put in
-	        // segments of the environment your robot is working in. This is
-	        // used both for visual display and for localization.
-
-	        // ****************** Additional Student Code: Start ************
-	
-	        // Change hard code here to change map:
-
-            numMapSegments = 8;
-            mapSegmentCorners = new double[numMapSegments, 2, 2];
-            slopes = new double[numMapSegments];
-            intercepts = new double[numMapSegments];
+            // count number of lines in CSV file
+            numMapSegments = File.ReadAllLines(@"C:\Users\CAPCOM\Desktop\map.csv").Length;
+            mapSegmentCorners = new double[numMapSegments,2,2];
             segmentSizes = new double[numMapSegments];
 
-            mapSegmentCorners[0, 0, 0] = 3.38 + 5.79 + 3.55 / 2;
-	        mapSegmentCorners[0,0,1] = 2.794;
-            mapSegmentCorners[0, 1, 0] = -3.38 - 5.79 - 3.55 / 2;
-            mapSegmentCorners[0, 1, 1] = 2.794;
+            // open CSV file
+            var reader = new StreamReader(File.OpenRead(@"C:\Users\CAPCOM\Desktop\map.csv"));
+            int r = 0;
 
-	        mapSegmentCorners[1,0,0] = -3.55/2;
-	        mapSegmentCorners[1,0,1] = 0.0;
-	        mapSegmentCorners[1,1,0] = -3.55/2;
-	        mapSegmentCorners[1,1,1] = -2.74;
+            // read line by line
+            while (!reader.EndOfStream)
+            {
+                var line = reader.ReadLine();
+                var values = line.Split(',');
+                mapSegmentCorners[r, 0, 0] = Convert.ToDouble(values[0]);
+                mapSegmentCorners[r, 0, 1] = Convert.ToDouble(values[1]);
+                mapSegmentCorners[r, 1, 0] = Convert.ToDouble(values[2]);
+                mapSegmentCorners[r, 1, 1] = Convert.ToDouble(values[3]);
+                r++;
+            }
+            reader.Close();
 
-	        mapSegmentCorners[2,0,0] = 3.55/2;
-	        mapSegmentCorners[2,0,1] = 0.0;
-	        mapSegmentCorners[2,1,0] = 3.55/2;
-	        mapSegmentCorners[2,1,1] = -2.74;
-
-            mapSegmentCorners[3, 0, 0] = 3.55/2;
-            mapSegmentCorners[3, 0, 1] = 0.0;
-            mapSegmentCorners[3, 1, 0] = 3.55 / 2 + 5.79;
-            mapSegmentCorners[3, 1, 1] = 0.0;
-
-            mapSegmentCorners[4, 0, 0] = -3.55/2;
-            mapSegmentCorners[4, 0, 1] = 0.0;
-            mapSegmentCorners[4, 1, 0] = -3.55/2 - 5.79;
-            mapSegmentCorners[4, 1, 1] = 0.0;
-
-            mapSegmentCorners[5, 0, 0] = -3.55/2;
-            mapSegmentCorners[5, 0, 1] = -2.74;
-            mapSegmentCorners[5, 1, 0] = -3.55/2-3.05;
-            mapSegmentCorners[5, 1, 1] = -2.74;
-
-            mapSegmentCorners[6, 0, 0] = 3.55 / 2;
-            mapSegmentCorners[6, 0, 1] = -2.74;
-            mapSegmentCorners[6, 1, 0] = 3.55 / 2 + 3.05;
-            mapSegmentCorners[6, 1, 1] = -2.74;
-
-            mapSegmentCorners[7, 0, 0] = 5.03 / 2;
-            mapSegmentCorners[7, 0, 1] = -2.74 - 2.31;
-            mapSegmentCorners[7, 1, 0] = -5.03/2;
-            mapSegmentCorners[7, 1, 1] = -2.74 - 2.31;
+             
             // ****************** Additional Student Code: End   ************
 
 
@@ -90,15 +60,12 @@ namespace DrRobot.JaguarControl
                 minY = Math.Min(minY, Math.Min(mapSegmentCorners[i,0,1], mapSegmentCorners[i,1,1]));
                 maxX = Math.Max(maxX, Math.Max(mapSegmentCorners[i,0,0], mapSegmentCorners[i,1,0]));
                 maxY = Math.Max(maxY, Math.Max(mapSegmentCorners[i,0,1], mapSegmentCorners[i,1,1]));
-		
-		        // Set wall segments to be horizontal
-		        slopes[i] = (mapSegmentCorners[i,0,1]-mapSegmentCorners[i,1,1])/(0.001+mapSegmentCorners[i,0,0]-mapSegmentCorners[i,1,0]);
-		        intercepts[i] = mapSegmentCorners[i,0,1] - slopes[i]*mapSegmentCorners[i,0,0];
 
 		        // Set wall segment lengths
 		        segmentSizes[i] = Math.Sqrt(Math.Pow(mapSegmentCorners[i,0,0]-mapSegmentCorners[i,1,0],2)+Math.Pow(mapSegmentCorners[i,0,1]-mapSegmentCorners[i,1,1],2));
 	        }
         }
+
 
 
         // This function is used in your particle filter localization lab. Find 

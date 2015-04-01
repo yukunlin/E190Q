@@ -229,9 +229,20 @@ namespace DrRobot.JaguarControl
 
         private void Animate()
         {
-            
-            xCenter = (int)(constxCenter - navigation._x * mapResolution);
-            yCenter = (int)(constyCenter + navigation._y * mapResolution);
+            double xToUse = navigation._x;
+            double yToUse = navigation._y;
+            double thetaToUse = navigation._theta;
+
+            if (!Simulating())
+            {
+                xToUse = navigation.x_est;
+                yToUse = navigation.y_est;
+                thetaToUse = navigation.t_est;
+            }
+
+
+            xCenter = (int)(constxCenter - xToUse * mapResolution);
+            yCenter = (int)(constyCenter + yToUse * mapResolution);
             
 
 
@@ -309,8 +320,8 @@ namespace DrRobot.JaguarControl
 
                 // UPDATE WITH PF X_EST, Y_EST?????????????????????????????????????????
                 // Draw Robot
-                int xShift = (int)(mapResolution * navigation._x);
-                int yShift = (int)(mapResolution * navigation._y);
+                int xShift = (int)(mapResolution * xToUse);
+                int yShift = (int)(mapResolution * yToUse);
 
                 // Draw laser range finder
                 double startAngle = startAng - Math.PI/2;
@@ -320,11 +331,17 @@ namespace DrRobot.JaguarControl
                 for (int i = 0; i < navigation.LaserData.Length; i = i + navigation.pf.SENSORSTEP)
                 {
                     var angle = startAngle + i*stepAng;
-                    listOfXs.Add(navigation.LaserData[i] / 1000.0 * Math.Cos(angle) * mapResolution);
-                    listOfYs.Add(navigation.LaserData[i] / 1000.0 * Math.Sin(angle) * mapResolution);
+                    double distance = navigation.LaserData[i];
+                    if (distance < 250)
+                        distance = Map.MAXLASERDISTANCE;
+                    else
+                        distance /= 1000.0;
+
+                    listOfXs.Add(distance * Math.Cos(angle) * mapResolution);
+                    listOfYs.Add(distance * Math.Sin(angle) * mapResolution);
                 }
 
-                var heading = navigation._theta;
+                var heading = thetaToUse;
                 // rotate end points by robot heading
                 for (int i = 0; i < listOfXs.Count; i++)
                 {
@@ -339,8 +356,8 @@ namespace DrRobot.JaguarControl
                 double robotDiagnol = 0.25 * mapResolution;
                 for (int i = 0; i < 4; i++)
                 {
-                    robotCorners[i].X = (int)(xCenter + xShift + robotDiagnol * Math.Cos(navigation._theta + robotCornerAngles[i]));
-                    robotCorners[i].Y = (int)(yCenter - yShift - robotDiagnol * Math.Sin(navigation._theta + robotCornerAngles[i]));
+                    robotCorners[i].X = (int)(xCenter + xShift + robotDiagnol * Math.Cos(thetaToUse + robotCornerAngles[i]));
+                    robotCorners[i].Y = (int)(yCenter - yShift - robotDiagnol * Math.Sin(thetaToUse + robotCornerAngles[i]));
                 }
 
                 g.FillPolygon(Brushes.DarkSlateGray, robotCorners);
@@ -351,18 +368,18 @@ namespace DrRobot.JaguarControl
             
                 for (int i = 0; i < 2; i++)
                 {
-                    trackCorners[2 * i].X = (int)(xCenter + xShift + robotDiagnol * Math.Cos(navigation._theta + robotTrackAngles[2 * i]));
-                    trackCorners[2 * i].Y = (int)(yCenter - yShift - robotDiagnol * Math.Sin(navigation._theta + robotTrackAngles[2 * i]));
-                    trackCorners[2 * i+1].X = (int)(xCenter + xShift + robotDiagnol * Math.Cos(navigation._theta + robotTrackAngles[2 * i+1]));
-                    trackCorners[2 * i+1].Y = (int)(yCenter - yShift - robotDiagnol * Math.Sin(navigation._theta + robotTrackAngles[2 * i+1]));
+                    trackCorners[2 * i].X = (int)(xCenter + xShift + robotDiagnol * Math.Cos(thetaToUse + robotTrackAngles[2 * i]));
+                    trackCorners[2 * i].Y = (int)(yCenter - yShift - robotDiagnol * Math.Sin(thetaToUse + robotTrackAngles[2 * i]));
+                    trackCorners[2 * i+1].X = (int)(xCenter + xShift + robotDiagnol * Math.Cos(thetaToUse + robotTrackAngles[2 * i+1]));
+                    trackCorners[2 * i+1].Y = (int)(yCenter - yShift - robotDiagnol * Math.Sin(thetaToUse + robotTrackAngles[2 * i+1]));
                     g.DrawLine(trackPen, trackCorners[2 * i], trackCorners[2 * i + 1]);
                 }
 
                 // Draw Laser on top
                 double laserDiagonal = 0.15*mapResolution;
                 int laserDiameter = (int)(0.08*mapResolution);
-                int X_laser = (int)(xCenter + xShift + laserDiagonal * Math.Cos(navigation._theta) - laserDiameter / 2);
-                int Y_laser = (int)(yCenter - yShift - laserDiagonal * Math.Sin(navigation._theta) - laserDiameter / 2);
+                int X_laser = (int)(xCenter + xShift + laserDiagonal * Math.Cos(thetaToUse) - laserDiameter / 2);
+                int Y_laser = (int)(yCenter - yShift - laserDiagonal * Math.Sin(thetaToUse) - laserDiameter / 2);
                 g.FillEllipse(Brushes.LightGray, X_laser, Y_laser, laserDiameter, laserDiameter);
 
 
