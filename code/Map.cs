@@ -25,12 +25,12 @@ namespace DrRobot.JaguarControl
         {
 
             // count number of lines in CSV file
-            numMapSegments = File.ReadAllLines(@"C:\Users\CAPCOM\Desktop\map.csv").Length;
+            numMapSegments = File.ReadAllLines(@"C:\Users\CAPCOM\Desktop\extended_map.csv").Length;
             mapSegmentCorners = new double[numMapSegments,2,2];
             segmentSizes = new double[numMapSegments];
 
             // open CSV file
-            var reader = new StreamReader(File.OpenRead(@"C:\Users\CAPCOM\Desktop\map.csv"));
+            var reader = new StreamReader(File.OpenRead(@"C:\Users\CAPCOM\Desktop\extended_map.csv"));
             int r = 0;
 
             // read line by line
@@ -103,7 +103,7 @@ namespace DrRobot.JaguarControl
             double xInt = x + Math.Cos(t)*tlaser;
             double yInt = y + Math.Sin(t)*tlaser;
 
-            return Navigation.normPoints(x, y, xInt, yInt);
+            return Navigation.squareSumPoints(x, y, xInt, yInt);
         }
 
 
@@ -128,13 +128,15 @@ namespace DrRobot.JaguarControl
                     minInd = i;
             }
 
+
+
             double wallX1 = mapSegmentCorners[minInd, 0, 0];
             double wallY1 = mapSegmentCorners[minInd, 0, 1];
             double wallX2 = mapSegmentCorners[minInd, 1, 0];
             double wallY2 = mapSegmentCorners[minInd, 1, 1];
 	        // ****************** Additional Student Code: End   ************
 
-	        return minDist;
+	        return Math.Sqrt(minDist);
         }
 
        

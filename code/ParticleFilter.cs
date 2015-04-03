@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Threading;
 using MathNet.Numerics.Distributions;
 using MathNet.Numerics.Providers.LinearAlgebra;
 using MathNet.Numerics.Statistics;
@@ -32,7 +33,7 @@ namespace DrRobot.JaguarControl
         private Normal dist;
 
 
-        private double SD = .5; 
+        private double SD = .4; 
         public int SENSORSTEP = 15;
 
         public ParticleFilter(int numParticles, Navigation n, Map m)
@@ -49,6 +50,10 @@ namespace DrRobot.JaguarControl
                 double x = ContinuousUniform.Sample(rand, m.minX, m.maxX);
                 double y = ContinuousUniform.Sample(rand, m.minY, m.maxY);
                 double t = ContinuousUniform.Sample(rand, -Math.PI, Math.PI);
+                /*
+                double x = ContinuousUniform.Sample(rand, -1, 1);
+                double y = ContinuousUniform.Sample(rand, -1, 1);
+                double t = ContinuousUniform.Sample(rand, -Math.PI/10, Math.PI/10);*/
                 
                 particles[i] = new Particle(x, y, t);
             }
@@ -138,7 +143,7 @@ namespace DrRobot.JaguarControl
                 double dice = ContinuousUniform.Sample(rand, 0, 1);
 
                 if (dice <= randProba) //TODO: ENABLE AMCL
-               // if (false)
+                //if (false)
                 {
                     double radSd = 10;
                     double thetaSd = 0.707;

@@ -85,6 +85,7 @@ namespace DrRobot.JaguarControl
         public double _accumL = 0;
         public double _accumR = 0;
 
+
         private LinkedList<double> _movingAvgValuesL;
         private LinkedList<double> _movingAvgValuesR;
         private LinkedList<double> _movingAvgDErrL;
@@ -93,6 +94,8 @@ namespace DrRobot.JaguarControl
         public LinkedList<double> _trajY;
         public LinkedList<double> _trajT;
 
+        public int count = 0;
+
         private long _milliElapsed;
         private readonly double pulsePerMeter;
 
@@ -100,7 +103,7 @@ namespace DrRobot.JaguarControl
         public Map map;
         public ParticleFilter pf;
 
-        public int numParticles = 1500;
+        public int numParticles = 500;
         public double K_wheelRandomness = 0.15;//0.25
         public Random random = new Random();
         public bool newLaserData = false;
@@ -272,7 +275,10 @@ namespace DrRobot.JaguarControl
 
 
                     // Estimate the global state of the robot -x_est, y_est, t_est (lab 4)
-                    LocalizeEstWithParticleFilter();
+
+                        LocalizeEstWithParticleFilter();
+
+                    
 
                     // If using the point tracker, call the function
                     if (jaguarControl.controlMode == jaguarControl.AUTONOMOUS)
@@ -686,6 +692,16 @@ namespace DrRobot.JaguarControl
 
         }
 
+        public static double squareSumPoints(double x1, double y1, double x2, double y2)
+        {
+
+            var deltaX = x1 - x2;
+            var deltaY = y1 - y2;
+
+            var distanceToTarget = Math.Pow(deltaX, 2) + Math.Pow(deltaY, 2);
+            return distanceToTarget;
+        }
+
 
         public static double normPoints(double x1, double y1, double x2, double y2)
         {
@@ -959,8 +975,9 @@ namespace DrRobot.JaguarControl
             // Put code here to calculate x_est, y_est, t_est using a PF
 
             pf.Predict();
+            count++;
 
-            if (Math.Abs(_diffEncoderPulseL) > 0 || Math.Abs(_diffEncoderPulseR) > 0)
+            if (Math.Abs(_diffEncoderPulseL) > 0 || Math.Abs(_diffEncoderPulseR) > 0 && count==5)
             {
                 pf.Correct();
             }
