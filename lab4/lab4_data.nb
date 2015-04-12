@@ -1,0 +1,561 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 10.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[     18509,        552]
+NotebookOptionsPosition[     17701,        524]
+NotebookOutlinePosition[     18090,        541]
+CellTagsIndexPosition[     18047,        538]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"lineMap", "=", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"#", "[", 
+        RowBox[{"[", 
+         RowBox[{"1", ";;", "2"}], "]"}], "]"}], ",", 
+       RowBox[{"#", "[", 
+        RowBox[{"[", 
+         RowBox[{"3", ";;", "4"}], "]"}], "]"}]}], "}"}], "&"}], "/@", 
+    RowBox[{"Import", "[", 
+     RowBox[{
+      RowBox[{"NotebookDirectory", "[", "]"}], "<>", 
+      "\"\<data/extended_map.csv\>\""}], "]"}]}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"lineMapSmall", "=", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"#", "[", 
+        RowBox[{"[", 
+         RowBox[{"1", ";;", "2"}], "]"}], "]"}], ",", 
+       RowBox[{"#", "[", 
+        RowBox[{"[", 
+         RowBox[{"3", ";;", "4"}], "]"}], "]"}]}], "}"}], "&"}], "/@", 
+    RowBox[{"Import", "[", 
+     RowBox[{
+      RowBox[{"NotebookDirectory", "[", "]"}], "<>", "\"\<data/map.csv\>\""}],
+      "]"}]}]}], ";"}]}], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"legend", "=", 
+   RowBox[{"LineLegend", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"Darker", "@", "Red"}], ",", 
+       RowBox[{"Darker", "@", "Green"}]}], "}"}], ",", "\[IndentingNewLine]", 
+     
+     RowBox[{"{", "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{"Text", "[", 
+        RowBox[{"Style", "[", 
+         RowBox[{"\"\<Odometry\>\"", ",", 
+          RowBox[{"FontSize", "\[Rule]", "12"}], ",", "Black", ",", 
+          RowBox[{"FontFamily", "\[Rule]", "\"\<Times New Roman\>\""}]}], 
+         "]"}], "]"}], ",", "\[IndentingNewLine]", 
+       RowBox[{"Text", "[", 
+        RowBox[{"Style", "[", 
+         RowBox[{"\"\<PF Estimate\>\"", ",", 
+          RowBox[{"FontSize", "\[Rule]", "12"}], ",", "Black", ",", 
+          RowBox[{"FontFamily", "\[Rule]", "\"\<Times New Roman\>\""}]}], 
+         "]"}], "]"}]}], "\[IndentingNewLine]", "}"}]}], 
+    "\[IndentingNewLine]", "]"}]}], ";"}]], "Input"],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{
+   RowBox[{"Options", "[", "TrajectoryPlot", "]"}], "=", 
+   RowBox[{"{", 
+    RowBox[{"map", "\[Rule]", "lineMap"}], "}"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"TrajectoryPlot", "[", 
+    RowBox[{"logPath_", ",", "plotRange_", ",", "legendCoords_", ",", 
+     RowBox[{"OptionsPattern", "[", "]"}]}], "]"}], ":=", 
+   RowBox[{"Module", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"dataTable", ",", "odoTraj", ",", "estTraj"}], "}"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{
+      RowBox[{"dataTable", "=", 
+       RowBox[{
+        RowBox[{"Import", "[", "logPath", "]"}], "[", 
+        RowBox[{"[", 
+         RowBox[{"2", ";;"}], "]"}], "]"}]}], ";", "\[IndentingNewLine]", 
+      RowBox[{"odoTraj", "=", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"#", "[", 
+          RowBox[{"[", 
+           RowBox[{"2", ";;", "3"}], "]"}], "]"}], "&"}], "/@", 
+        "dataTable"}]}], ";", "\[IndentingNewLine]", 
+      RowBox[{"estTraj", "=", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"#", "[", 
+          RowBox[{"[", 
+           RowBox[{"5", ";;", "6"}], "]"}], "]"}], "&"}], "/@", 
+        "dataTable"}]}], ";", "\[IndentingNewLine]", "\[IndentingNewLine]", 
+      RowBox[{"Graphics", "[", 
+       RowBox[{
+        RowBox[{"{", "\[IndentingNewLine]", 
+         RowBox[{
+          RowBox[{"{", 
+           RowBox[{"Thick", ",", 
+            RowBox[{"Line", "@", 
+             RowBox[{"OptionValue", "[", "map", "]"}]}]}], "}"}], ",", 
+          "\[IndentingNewLine]", 
+          RowBox[{"{", 
+           RowBox[{
+            RowBox[{"Darker", "@", "Red"}], ",", 
+            RowBox[{"Line", "@", "odoTraj"}]}], "}"}], ",", 
+          "\[IndentingNewLine]", 
+          RowBox[{"{", 
+           RowBox[{
+            RowBox[{"Darker", "@", "Green"}], ",", 
+            RowBox[{"Line", "@", "estTraj"}]}], "}"}], ",", 
+          "\[IndentingNewLine]", 
+          RowBox[{"Inset", "[", 
+           RowBox[{"legend", ",", 
+            RowBox[{"Scaled", "[", "legendCoords", "]"}]}], "]"}]}], 
+         "\[IndentingNewLine]", "}"}], ",", "\[IndentingNewLine]", 
+        RowBox[{"ImageSize", "\[Rule]", "350"}], ",", "\[IndentingNewLine]", 
+        RowBox[{"PlotRange", "\[Rule]", "plotRange"}]}], 
+       "\[IndentingNewLine]", "]"}]}]}], "\[IndentingNewLine]", "]"}]}], 
+  ";"}]}], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"ErrorPlotPosition", "[", "logPath_", "]"}], ":=", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{
+     "dataTable", ",", "odoTraj", ",", "estTraj", ",", "time", ",", "diff", 
+      ",", "err"}], "}"}], ",", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"dataTable", "=", 
+      RowBox[{
+       RowBox[{"Import", "[", "logPath", "]"}], "[", 
+       RowBox[{"[", 
+        RowBox[{"2", ";;"}], "]"}], "]"}]}], ";", "\[IndentingNewLine]", 
+     RowBox[{"time", "=", 
+      RowBox[{"(", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"#", "[", 
+          RowBox[{"[", "1", "]"}], "]"}], "&"}], "/@", "dataTable"}], ")"}]}],
+      ";", "\[IndentingNewLine]", 
+     RowBox[{"odoTraj", "=", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"#", "[", 
+         RowBox[{"[", 
+          RowBox[{"2", ";;", "3"}], "]"}], "]"}], "&"}], "/@", 
+       "dataTable"}]}], ";", "\[IndentingNewLine]", 
+     RowBox[{"estTraj", "=", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"#", "[", 
+         RowBox[{"[", 
+          RowBox[{"5", ";;", "6"}], "]"}], "]"}], "&"}], "/@", 
+       "dataTable"}]}], ";", "\[IndentingNewLine]", "\[IndentingNewLine]", 
+     RowBox[{"diff", "=", 
+      RowBox[{"estTraj", "-", "odoTraj"}]}], ";", "\[IndentingNewLine]", 
+     RowBox[{"err", "=", 
+      RowBox[{"Norm", "/@", "diff"}]}], ";", "\[IndentingNewLine]", 
+     "\[IndentingNewLine]", 
+     RowBox[{"ListPlot", "[", 
+      RowBox[{
+       RowBox[{"Transpose", "[", 
+        RowBox[{"{", 
+         RowBox[{"time", ",", "err"}], "}"}], "]"}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{"Frame", "\[Rule]", "True"}], ",", "\[IndentingNewLine]", 
+       RowBox[{"Frame", "\[Rule]", "True"}], ",", "\[IndentingNewLine]", 
+       RowBox[{"BaseStyle", "\[Rule]", 
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"FontFamily", "\[Rule]", "\"\<Times New Roman\>\""}], ",", 
+          RowBox[{"FontSize", "\[Rule]", " ", "12"}]}], "}"}]}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{"LabelStyle", "\[Rule]", 
+        RowBox[{"Directive", "[", "Black", "]"}]}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{"FrameLabel", "\[Rule]", 
+        RowBox[{"{", 
+         RowBox[{"\"\<Time (s)\>\"", ",", "\"\<Position Error (m)\>\""}], 
+         "}"}]}], ",", "\[IndentingNewLine]", 
+       RowBox[{"AspectRatio", "\[Rule]", 
+        RowBox[{
+         SuperscriptBox["GoldenRatio", 
+          RowBox[{"-", "1"}]], "*", ".5"}]}], ",", "\[IndentingNewLine]", 
+       RowBox[{"ImageSize", "\[Rule]", "500"}], ",", "\[IndentingNewLine]", 
+       RowBox[{"PlotRangeClipping", "\[Rule]", "True"}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{"PlotRange", "\[Rule]", 
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"{", 
+           RowBox[{
+            RowBox[{"Min", "[", "time", "]"}], ",", 
+            RowBox[{"Max", "@", "time"}]}], "}"}], ",", "Full"}], "}"}]}], 
+       ",", "\[IndentingNewLine]", 
+       RowBox[{"Joined", "\[Rule]", "True"}], ",", "\[IndentingNewLine]", 
+       RowBox[{"ImagePadding", "\[Rule]", 
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"{", 
+           RowBox[{"45", ",", "20"}], "}"}], ",", 
+          RowBox[{"{", 
+           RowBox[{"35", ",", "5"}], "}"}]}], "}"}]}]}], 
+      "\[IndentingNewLine]", "]"}]}]}], "\[IndentingNewLine]", 
+   "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"SpreadPlot", "[", "logPath_", "]"}], ":=", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"dataTable", ",", "time", ",", "spread"}], "}"}], ",", 
+    "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"dataTable", "=", 
+      RowBox[{
+       RowBox[{"Import", "[", "logPath", "]"}], "[", 
+       RowBox[{"[", 
+        RowBox[{"2", ";;"}], "]"}], "]"}]}], ";", "\[IndentingNewLine]", 
+     RowBox[{"time", "=", 
+      RowBox[{"(", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"#", "[", 
+          RowBox[{"[", "1", "]"}], "]"}], "&"}], "/@", "dataTable"}], ")"}]}],
+      ";", "\[IndentingNewLine]", 
+     RowBox[{"spread", "=", 
+      RowBox[{"Norm", "/@", 
+       RowBox[{"(", 
+        RowBox[{
+         RowBox[{
+          RowBox[{"#", "[", 
+           RowBox[{"[", 
+            RowBox[{"8", ";;", "9"}], "]"}], "]"}], "&"}], "/@", 
+         "dataTable"}], ")"}]}]}], ";", "\[IndentingNewLine]", 
+     "\[IndentingNewLine]", 
+     RowBox[{"ListPlot", "[", 
+      RowBox[{
+       RowBox[{"Transpose", "[", 
+        RowBox[{"{", 
+         RowBox[{"time", ",", "spread"}], "}"}], "]"}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{"Frame", "\[Rule]", "True"}], ",", "\[IndentingNewLine]", 
+       RowBox[{"Frame", "\[Rule]", "True"}], ",", "\[IndentingNewLine]", 
+       RowBox[{"BaseStyle", "\[Rule]", 
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"FontFamily", "\[Rule]", "\"\<Times New Roman\>\""}], ",", 
+          RowBox[{"FontSize", "\[Rule]", " ", "12"}]}], "}"}]}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{"LabelStyle", "\[Rule]", 
+        RowBox[{"Directive", "[", "Black", "]"}]}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{"FrameLabel", "\[Rule]", 
+        RowBox[{"{", 
+         RowBox[{"\"\<Time (s)\>\"", ",", "\"\<Spread (m)\>\""}], "}"}]}], 
+       ",", "\[IndentingNewLine]", 
+       RowBox[{"AspectRatio", "\[Rule]", 
+        RowBox[{
+         SuperscriptBox["GoldenRatio", 
+          RowBox[{"-", "1"}]], "*", ".5"}]}], ",", "\[IndentingNewLine]", 
+       RowBox[{"ImageSize", "\[Rule]", "500"}], ",", "\[IndentingNewLine]", 
+       RowBox[{"PlotRangeClipping", "\[Rule]", "True"}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{"PlotRange", "\[Rule]", 
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"{", 
+           RowBox[{
+            RowBox[{"Min", "[", "time", "]"}], ",", 
+            RowBox[{"Max", "@", "time"}]}], "}"}], ",", "Full"}], "}"}]}], 
+       ",", "\[IndentingNewLine]", 
+       RowBox[{"Joined", "\[Rule]", "True"}], ",", "\[IndentingNewLine]", 
+       RowBox[{"ImagePadding", "\[Rule]", 
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"{", 
+           RowBox[{"45", ",", "20"}], "}"}], ",", 
+          RowBox[{"{", 
+           RowBox[{"35", ",", "5"}], "}"}]}], "}"}]}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{"PlotStyle", "\[Rule]", "Red"}]}], "\[IndentingNewLine]", 
+      "]"}]}]}], "\[IndentingNewLine]", "]"}]}]], "Input"],
+
+Cell[BoxData[{
+ RowBox[{"GraphicsGrid", "[", 
+  RowBox[{"{", "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"ErrorPlotPosition", "[", 
+      RowBox[{
+       RowBox[{"NotebookDirectory", "[", "]"}], "<>", 
+       "\"\<data/sim_lost_robot.csv\>\""}], "]"}], "}"}], ",", 
+    "\[IndentingNewLine]", 
+    RowBox[{"{", 
+     RowBox[{"SpreadPlot", "[", 
+      RowBox[{
+       RowBox[{"NotebookDirectory", "[", "]"}], "<>", 
+       "\"\<data/sim_lost_robot.csv\>\""}], "]"}], "}"}]}], 
+   "\[IndentingNewLine]", "}"}], "\[IndentingNewLine]", 
+  "]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Export", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"NotebookDirectory", "[", "]"}], "<>", 
+     "\"\<figures/sim_lost_error.pdf\>\""}], ",", "%"}], "]"}], 
+  ";"}]}], "Input"],
+
+Cell[BoxData[{
+ RowBox[{"GraphicsGrid", "[", 
+  RowBox[{"{", "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"ErrorPlotPosition", "[", 
+      RowBox[{
+       RowBox[{"NotebookDirectory", "[", "]"}], "<>", 
+       "\"\<data/sim_unknown_start.csv\>\""}], "]"}], "}"}], ",", 
+    "\[IndentingNewLine]", 
+    RowBox[{"{", 
+     RowBox[{"SpreadPlot", "[", 
+      RowBox[{
+       RowBox[{"NotebookDirectory", "[", "]"}], "<>", 
+       "\"\<data/sim_unknown_start.csv\>\""}], "]"}], "}"}]}], 
+   "\[IndentingNewLine]", "}"}], "\[IndentingNewLine]", 
+  "]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Export", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"NotebookDirectory", "[", "]"}], "<>", 
+     "\"\<figures/sim_unknown_start_error.pdf\>\""}], ",", "%"}], "]"}], 
+  ";"}]}], "Input"],
+
+Cell[BoxData[{
+ RowBox[{"GraphicsGrid", "[", 
+  RowBox[{"{", "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"ErrorPlotPosition", "[", 
+      RowBox[{
+       RowBox[{"NotebookDirectory", "[", "]"}], "<>", 
+       "\"\<data/sim_known_start.csv\>\""}], "]"}], "}"}], ",", 
+    "\[IndentingNewLine]", 
+    RowBox[{"{", 
+     RowBox[{"SpreadPlot", "[", 
+      RowBox[{
+       RowBox[{"NotebookDirectory", "[", "]"}], "<>", 
+       "\"\<data/sim_known_start.csv\>\""}], "]"}], "}"}]}], 
+   "\[IndentingNewLine]", "}"}], "\[IndentingNewLine]", 
+  "]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Export", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"NotebookDirectory", "[", "]"}], "<>", 
+     "\"\<figures/sim_known_start.pdf\>\""}], ",", "%"}], "]"}], 
+  ";"}]}], "Input"],
+
+Cell[BoxData[{
+ RowBox[{"GraphicsGrid", "[", 
+  RowBox[{"{", "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"ErrorPlotPosition", "[", 
+      RowBox[{
+       RowBox[{"NotebookDirectory", "[", "]"}], "<>", 
+       "\"\<data/hardware_large_square.csv\>\""}], "]"}], "}"}], ",", 
+    "\[IndentingNewLine]", 
+    RowBox[{"{", 
+     RowBox[{"SpreadPlot", "[", 
+      RowBox[{
+       RowBox[{"NotebookDirectory", "[", "]"}], "<>", 
+       "\"\<data/hardware_large_square.csv\>\""}], "]"}], "}"}]}], 
+   "\[IndentingNewLine]", "}"}], "\[IndentingNewLine]", 
+  "]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Export", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"NotebookDirectory", "[", "]"}], "<>", 
+     "\"\<figures/hardware_large_spread.pdf\>\""}], ",", "%"}], "]"}], 
+  ";"}]}], "Input"],
+
+Cell[BoxData[{
+ RowBox[{"TrajectoryPlot", "[", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"NotebookDirectory", "[", "]"}], "<>", 
+    "\"\<data/hardware_large_square.csv\>\""}], ",", 
+   RowBox[{
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"-", "20"}], ",", "20"}], "}"}], ",", 
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"-", "20"}], ",", "20"}], "}"}]}], "}"}], "+", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"-", "2"}], ",", 
+        RowBox[{"-", "8"}]}], "}"}]}], ")"}], "*", ".6"}], ",", 
+   RowBox[{"{", 
+    RowBox[{".8", ",", ".91"}], "}"}]}], "]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Export", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"NotebookDirectory", "[", "]"}], "<>", 
+     "\"\<figures/hardware_traj.pdf\>\""}], ",", "%"}], "]"}], 
+  ";"}]}], "Input"],
+
+Cell[BoxData[{
+ RowBox[{"TrajectoryPlot", "[", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"NotebookDirectory", "[", "]"}], "<>", 
+    "\"\<data/sim_known_start.csv\>\""}], ",", 
+   RowBox[{
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"-", "20"}], ",", "20"}], "}"}], ",", 
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"-", "20"}], ",", "20"}], "}"}]}], "}"}], "+", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"-", "2"}], ",", 
+        RowBox[{"-", "8"}]}], "}"}]}], ")"}], "*", ".6"}], ",", 
+   RowBox[{"{", 
+    RowBox[{".8", ",", ".91"}], "}"}]}], "]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Export", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"NotebookDirectory", "[", "]"}], "<>", 
+     "\"\<figures/sim_traj.pdf\>\""}], ",", "%"}], "]"}], ";"}]}], "Input"],
+
+Cell[BoxData[
+ RowBox[{"TrajectoryPlot", "[", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"NotebookDirectory", "[", "]"}], "<>", 
+    "\"\<data/sim_unknown_start.csv\>\""}], ",", 
+   RowBox[{
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"-", "20"}], ",", "20"}], "}"}], ",", 
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"-", "10"}], ",", "10"}], "}"}]}], "}"}], "+", 
+      RowBox[{"{", 
+       RowBox[{"0", ",", "0"}], "}"}]}], ")"}], "*", ".6"}], ",", 
+   RowBox[{"{", 
+    RowBox[{".8", ",", ".85"}], "}"}], ",", 
+   RowBox[{"map", "\[Rule]", "lineMapSmall"}]}], "]"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"TrajectoryPlot", "[", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"NotebookDirectory", "[", "]"}], "<>", 
+    "\"\<data/sim_lost_robot.csv\>\""}], ",", 
+   RowBox[{
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"-", "20"}], ",", "20"}], "}"}], ",", 
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"-", "10"}], ",", "10"}], "}"}]}], "}"}], "+", 
+      RowBox[{"{", 
+       RowBox[{"0", ",", "0"}], "}"}]}], ")"}], "*", ".6"}], ",", 
+   RowBox[{"{", 
+    RowBox[{".8", ",", ".85"}], "}"}], ",", 
+   RowBox[{"map", "\[Rule]", "lineMapSmall"}]}], "]"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"Graphics", "[", 
+  RowBox[{"Line", "@", "lineMapSmall"}], "]"}]], "Input"]
+},
+WindowSize->{840, 938},
+WindowMargins->{{Automatic, 110}, {62, Automatic}},
+Magnification:>1.25 Inherited,
+FrontEndVersion->"10.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (December 4, \
+2014)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[558, 20, 995, 33, 99, "Input"],
+Cell[1556, 55, 974, 24, 183, "Input"],
+Cell[2533, 81, 2377, 63, 372, "Input"],
+Cell[4913, 146, 3373, 86, 542, "Input"],
+Cell[8289, 234, 3013, 77, 458, "Input"],
+Cell[11305, 313, 787, 23, 141, "Input"],
+Cell[12095, 338, 802, 23, 162, "Input"],
+Cell[12900, 363, 790, 23, 141, "Input"],
+Cell[13693, 388, 808, 23, 162, "Input"],
+Cell[14504, 413, 881, 29, 78, "Input"],
+Cell[15388, 444, 867, 28, 78, "Input"],
+Cell[16258, 474, 669, 21, 57, "Input"],
+Cell[16930, 497, 666, 21, 57, "Input"],
+Cell[17599, 520, 98, 2, 36, "Input"]
+}
+]
+*)
+
+(* End of internal cache information *)

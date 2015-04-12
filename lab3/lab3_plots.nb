@@ -1,0 +1,570 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 10.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[     19474,        561]
+NotebookOptionsPosition[     18536,        530]
+NotebookOutlinePosition[     18924,        547]
+CellTagsIndexPosition[     18881,        544]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"GetColumn", "[", 
+   RowBox[{"csvWithHeader_", ",", "columnHeader_"}], "]"}], ":=", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"index", ",", "header", ",", "data", ",", "posList"}], "}"}], 
+    ",", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"header", "=", 
+      RowBox[{"csvWithHeader", "//", "First"}]}], ";", "\[IndentingNewLine]", 
+     
+     RowBox[{"data", "=", 
+      RowBox[{"csvWithHeader", "//", "Rest"}]}], ";", "\[IndentingNewLine]", 
+     RowBox[{"posList", "=", 
+      RowBox[{"Position", "[", 
+       RowBox[{"header", ",", "columnHeader"}], "]"}]}], ";", 
+     "\[IndentingNewLine]", 
+     RowBox[{"index", "=", 
+      RowBox[{"If", "[", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"Length", "[", "posList", "]"}], "\[Equal]", "0"}], ",", 
+        RowBox[{"-", "999"}], ",", 
+        RowBox[{
+         RowBox[{"posList", "//", "First"}], "//", "First"}]}], "]"}]}], ";", 
+     "\[IndentingNewLine]", "\[IndentingNewLine]", 
+     RowBox[{"If", "[", 
+      RowBox[{
+       RowBox[{"index", "\[Equal]", 
+        RowBox[{"-", "999"}]}], ",", 
+       RowBox[{"ConstantArray", "[", 
+        RowBox[{
+         RowBox[{"-", "999"}], ",", 
+         RowBox[{"Length", "@", "data"}]}], "]"}], ",", 
+       RowBox[{
+        RowBox[{"Transpose", "[", "data", "]"}], "[", 
+        RowBox[{"[", "index", "]"}], "]"}]}], "]"}]}]}], 
+   "\[IndentingNewLine]", "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"ImportXY", "[", "path_", "]"}], ":=", 
+   RowBox[{"Module", "[", 
+    RowBox[{
+     RowBox[{"{", "dataTable", "}"}], ",", "\[IndentingNewLine]", 
+     RowBox[{
+      RowBox[{"dataTable", "=", 
+       RowBox[{"Import", "@", "path"}]}], ";", "\[IndentingNewLine]", 
+      "\[IndentingNewLine]", 
+      RowBox[{"Transpose", "[", 
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"GetColumn", "[", 
+          RowBox[{"dataTable", ",", "\"\<x\>\""}], "]"}], ",", 
+         RowBox[{"GetColumn", "[", 
+          RowBox[{"dataTable", ",", "\"\<y\>\""}], "]"}]}], "}"}], "]"}]}]}], 
+    "\[IndentingNewLine]", "]"}]}], ";"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"ImportRotation", "[", "path_", "]"}], ":=", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", "dataTable", "}"}], ",", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"dataTable", "=", 
+      RowBox[{"Import", "@", "path"}]}], ";", "\[IndentingNewLine]", 
+     "\[IndentingNewLine]", 
+     RowBox[{"Transpose", "[", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"GetColumn", "[", 
+         RowBox[{"dataTable", ",", "\"\<desRotL\>\""}], "]"}], ",", 
+        RowBox[{"GetColumn", "[", 
+         RowBox[{"dataTable", ",", "\"\<desRotR\>\""}], "]"}], ",", 
+        RowBox[{"GetColumn", "[", 
+         RowBox[{"dataTable", ",", "\"\<actRotL\>\""}], "]"}], ",", 
+        RowBox[{"-", 
+         RowBox[{"GetColumn", "[", 
+          RowBox[{"dataTable", ",", "\"\<actRotR\>\""}], "]"}]}]}], "}"}], 
+      "]"}]}]}], "\[IndentingNewLine]", "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"trajPlot", "[", 
+    RowBox[{"sim_", ",", "hard_", ",", "plotRange_", ",", "lengendCoords_"}], 
+    "]"}], ":=", "\[IndentingNewLine]", 
+   RowBox[{"Graphics", "[", 
+    RowBox[{
+     RowBox[{"{", "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"Red", ",", 
+         RowBox[{"Line", "[", "hard", "]"}]}], "}"}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{"{", 
+        RowBox[{"Blue", ",", 
+         RowBox[{"Line", "@", "sim"}]}], "}"}], ",", "\[IndentingNewLine]", 
+       RowBox[{"Inset", "[", 
+        RowBox[{"legend", ",", 
+         RowBox[{"Scaled", "[", "lengendCoords", "]"}]}], "]"}]}], 
+      "\[IndentingNewLine]", "}"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"Frame", "\[Rule]", "True"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"BaseStyle", "\[Rule]", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"FontFamily", "\[Rule]", "\"\<Times New Roman\>\""}], ",", 
+        RowBox[{"FontSize", "\[Rule]", " ", "12"}], ",", 
+        RowBox[{"FontColor", "\[Rule]", "Black"}]}], "}"}]}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"LabelStyle", "\[Rule]", 
+      RowBox[{"Directive", "[", "Black", "]"}]}], ",", "\[IndentingNewLine]", 
+     
+     RowBox[{"FrameLabel", "\[Rule]", 
+      RowBox[{"{", 
+       RowBox[{"\"\<x (m)\>\"", ",", "\"\<y (m)\>\""}], "}"}]}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"PlotRange", "\[Rule]", "plotRange"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"ImageSize", "\[Rule]", "350"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"ImagePadding", "\[Rule]", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{"45", ",", "45"}], "}"}], ",", 
+        RowBox[{"{", 
+         RowBox[{"35", ",", "5"}], "}"}]}], "}"}]}]}], "\[IndentingNewLine]", 
+    "]"}]}], ";"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"legend", "=", 
+   RowBox[{"LineLegend", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"Red", ",", "Blue"}], "}"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"{", "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{"Text", "[", 
+        RowBox[{"Style", "[", 
+         RowBox[{"\"\<Hardware\>\"", ",", 
+          RowBox[{"FontSize", "\[Rule]", "12"}], ",", "Black", ",", 
+          RowBox[{"FontFamily", "\[Rule]", "\"\<Times New Roman\>\""}]}], 
+         "]"}], "]"}], ",", "\[IndentingNewLine]", 
+       RowBox[{"Text", "[", 
+        RowBox[{"Style", "[", 
+         RowBox[{"\"\<Simulation\>\"", ",", 
+          RowBox[{"FontSize", "\[Rule]", "12"}], ",", "Black", ",", 
+          RowBox[{"FontFamily", "\[Rule]", "\"\<Times New Roman\>\""}]}], 
+         "]"}], "]"}]}], "\[IndentingNewLine]", "}"}]}], 
+    "\[IndentingNewLine]", "]"}]}], ";"}]], "Input",
+ CellGroupingRules->{GroupTogetherGrouping, 10001.}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"circleHardware", "=", 
+   RowBox[{
+    RowBox[{"ImportXY", "[", 
+     RowBox[{
+      RowBox[{"NotebookDirectory", "[", "]"}], "<>", 
+      "\"\<data/hardware/circle.csv\>\""}], "]"}], "[", 
+    RowBox[{"[", 
+     RowBox[{";;", "695"}], "]"}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"circleSimulate", "=", 
+   RowBox[{"ImportXY", "[", 
+    RowBox[{
+     RowBox[{"NotebookDirectory", "[", "]"}], "<>", 
+     "\"\<data/simulation/1.5m circle.csv\>\""}], "]"}]}], ";"}]}], "Input"],
+
+Cell[BoxData[{
+ RowBox[{"circlePlot", "=", 
+  RowBox[{"trajPlot", "[", 
+   RowBox[{"circleSimulate", ",", "circleHardware", ",", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"-", "2.5"}], ",", "2.5"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"-", "2.5"}], ",", "2.5"}], "}"}]}], "}"}], "+", 
+     RowBox[{"{", 
+      RowBox[{"0", ",", ".2"}], "}"}]}], ",", 
+    RowBox[{"{", 
+     RowBox[{".82", ",", ".9"}], "}"}]}], "]"}]}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Export", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"NotebookDirectory", "[", "]"}], "<>", 
+     "\"\<figures/circle.pdf\>\""}], ",", "%"}], "]"}], ";"}]}], "Input"],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"squareHardware", "=", 
+   RowBox[{"ImportXY", "[", 
+    RowBox[{
+     RowBox[{"NotebookDirectory", "[", "]"}], "<>", 
+     "\"\<data/hardware/square.csv\>\""}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"squareSimulate", "=", 
+   RowBox[{"ImportXY", "[", 
+    RowBox[{
+     RowBox[{"NotebookDirectory", "[", "]"}], "<>", 
+     "\"\<data/simulation/2m square.csv\>\""}], "]"}]}], ";"}]}], "Input"],
+
+Cell[BoxData[{
+ RowBox[{"squarePlot", "=", 
+  RowBox[{"trajPlot", "[", 
+   RowBox[{"squareSimulate", ",", "squareHardware", ",", 
+    RowBox[{
+     RowBox[{"1.1", "*", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{"0", ",", "3"}], "}"}], ",", 
+        RowBox[{"{", 
+         RowBox[{"0", ",", "3"}], "}"}]}], "}"}]}], "+", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"-", ".6"}], ",", 
+       RowBox[{"-", ".4"}]}], "}"}]}], ",", 
+    RowBox[{"{", 
+     RowBox[{".82", ",", ".9"}], "}"}]}], "]"}]}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Export", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"NotebookDirectory", "[", "]"}], "<>", 
+     "\"\<figures/square.pdf\>\""}], ",", "%"}], "]"}], ";"}]}], "Input"],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"tHardware", "=", 
+   RowBox[{"ImportXY", "[", 
+    RowBox[{
+     RowBox[{"NotebookDirectory", "[", "]"}], "<>", 
+     "\"\<data/hardware/T shape.csv\>\""}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"tSimulate", "=", 
+   RowBox[{"ImportXY", "[", 
+    RowBox[{
+     RowBox[{"NotebookDirectory", "[", "]"}], "<>", 
+     "\"\<data/simulation/T shape.csv\>\""}], "]"}]}], ";"}]}], "Input"],
+
+Cell[BoxData[{
+ RowBox[{"tPlot", "=", 
+  RowBox[{"trajPlot", "[", 
+   RowBox[{
+    RowBox[{"Reverse", "/@", "tSimulate"}], ",", 
+    RowBox[{"Reverse", "/@", "tHardware"}], ",", 
+    RowBox[{
+     RowBox[{".9", "*", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"-", "1.75"}], ",", "1.75"}], "}"}], ",", 
+        RowBox[{"{", 
+         RowBox[{"0", ",", "3.5"}], "}"}]}], "}"}]}], "-", 
+     RowBox[{"{", 
+      RowBox[{"0", ",", "0.4"}], "}"}]}], ",", 
+    RowBox[{"{", 
+     RowBox[{".82", ",", ".85"}], "}"}]}], "]"}]}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Export", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"NotebookDirectory", "[", "]"}], "<>", 
+     "\"\<figures/t_shape.pdf\>\""}], ",", "%"}], "]"}], ";"}]}], "Input"],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"circleErrSim", "=", 
+   RowBox[{
+    RowBox[{
+     RowBox[{
+      RowBox[{"Norm", "[", "#", "]"}], "-", "1.5"}], "&"}], "/@", 
+    "circleSimulate"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"circleHardSim", "=", 
+   RowBox[{
+    RowBox[{
+     RowBox[{
+      RowBox[{"Norm", "[", "#", "]"}], "-", "1.5"}], "&"}], "/@", 
+    "circleHardware"}]}], ";"}]}], "Input"],
+
+Cell[BoxData[{
+ RowBox[{"circleErr", "=", 
+  RowBox[{"Graphics", "[", 
+   RowBox[{
+    RowBox[{"{", "\[IndentingNewLine]", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"Red", ",", 
+        RowBox[{"Line", "[", 
+         RowBox[{"Transpose", "[", 
+          RowBox[{"{", 
+           RowBox[{
+            RowBox[{"Range", "[", 
+             RowBox[{"Length", "@", "circleHardSim"}], "]"}], ",", 
+            "circleHardSim"}], "}"}], "]"}], "]"}]}], "}"}], ",", 
+      "\[IndentingNewLine]", 
+      RowBox[{"{", 
+       RowBox[{"Blue", ",", 
+        RowBox[{"Line", "[", 
+         RowBox[{"Transpose", "[", 
+          RowBox[{"{", 
+           RowBox[{
+            RowBox[{"Range", "[", 
+             RowBox[{"Length", "@", "circleErrSim"}], "]"}], ",", 
+            "circleErrSim"}], "}"}], "]"}], "]"}]}], "}"}], ",", 
+      "\[IndentingNewLine]", 
+      RowBox[{"Inset", "[", 
+       RowBox[{"legend", ",", 
+        RowBox[{"Scaled", "[", 
+         RowBox[{"{", 
+          RowBox[{"0.82", ",", "0.83"}], "}"}], "]"}]}], "]"}]}], 
+     "\[IndentingNewLine]", "}"}], ",", "\[IndentingNewLine]", 
+    RowBox[{"Frame", "\[Rule]", "True"}], ",", "\[IndentingNewLine]", 
+    RowBox[{"BaseStyle", "\[Rule]", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"FontFamily", "\[Rule]", "\"\<Times New Roman\>\""}], ",", 
+       RowBox[{"FontSize", "\[Rule]", " ", "12"}]}], "}"}]}], ",", 
+    "\[IndentingNewLine]", 
+    RowBox[{"LabelStyle", "\[Rule]", 
+     RowBox[{"Directive", "[", "Black", "]"}]}], ",", "\[IndentingNewLine]", 
+    RowBox[{"FrameLabel", "\[Rule]", 
+     RowBox[{"{", 
+      RowBox[{"\"\<Time step\>\"", ",", "\"\<Radius Error (m)\>\""}], "}"}]}],
+     ",", "\[IndentingNewLine]", 
+    RowBox[{"AspectRatio", "\[Rule]", 
+     SuperscriptBox["GoldenRatio", 
+      RowBox[{"-", "1"}]]}], ",", "\[IndentingNewLine]", 
+    RowBox[{"ImageSize", "\[Rule]", "350"}], ",", "\[IndentingNewLine]", 
+    RowBox[{"PlotRange", "\[Rule]", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"0", ",", "700"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"-", "1.5"}], ",", "1.6"}], "}"}]}], "}"}]}], ",", 
+    "\[IndentingNewLine]", 
+    RowBox[{"PlotRangeClipping", "\[Rule]", "True"}], ",", 
+    "\[IndentingNewLine]", 
+    RowBox[{"ImagePadding", "\[Rule]", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"45", ",", "45"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"35", ",", "5"}], "}"}]}], "}"}]}]}], "\[IndentingNewLine]", 
+   "]"}]}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Export", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"NotebookDirectory", "[", "]"}], "<>", 
+     "\"\<figures/circle_err.pdf\>\""}], ",", "%"}], "]"}], ";"}]}], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"squareRotation", "=", 
+   RowBox[{"Transpose", "@", 
+    RowBox[{"MovingAverage", "[", 
+     RowBox[{
+      RowBox[{"ImportRotation", "[", 
+       RowBox[{
+        RowBox[{"NotebookDirectory", "[", "]"}], "<>", 
+        "\"\<data/hardware/circle.csv\>\""}], "]"}], ",", "5"}], "]"}]}]}], 
+  ";"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"pidLegend", "=", 
+  RowBox[{"LineLegend", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"Purple", ",", "Orange"}], "}"}], ",", "\[IndentingNewLine]", 
+    RowBox[{"{", "\[IndentingNewLine]", 
+     RowBox[{
+      RowBox[{"Text", "[", 
+       RowBox[{"Style", "[", 
+        RowBox[{"\"\<Left\>\"", ",", 
+         RowBox[{"FontSize", "\[Rule]", "12"}], ",", "Black", ",", 
+         RowBox[{"FontFamily", "\[Rule]", "\"\<Times New Roman\>\""}]}], 
+        "]"}], "]"}], ",", "\[IndentingNewLine]", 
+      RowBox[{"Text", "[", 
+       RowBox[{"Style", "[", 
+        RowBox[{"\"\<Right\>\"", ",", 
+         RowBox[{"FontSize", "\[Rule]", "12"}], ",", "Black", ",", 
+         RowBox[{"FontFamily", "\[Rule]", "\"\<Times New Roman\>\""}]}], 
+        "]"}], "]"}]}], "\[IndentingNewLine]", "}"}], ",", 
+    "\[IndentingNewLine]", 
+    RowBox[{"LegendLayout", "->", "\"\<Row\>\""}]}], "]"}]}]], "Input"],
+
+Cell[BoxData[{
+ RowBox[{"pidSquareErr", "=", 
+  RowBox[{"Graphics", "[", 
+   RowBox[{
+    RowBox[{"{", "\[IndentingNewLine]", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"Purple", ",", "Dashed", ",", 
+        RowBox[{"Line", "[", 
+         RowBox[{"Transpose", "[", 
+          RowBox[{"{", 
+           RowBox[{
+            RowBox[{"Range", "[", 
+             RowBox[{"Length", "@", 
+              RowBox[{"squareRotation", "[", 
+               RowBox[{"[", "1", "]"}], "]"}]}], "]"}], ",", 
+            RowBox[{"squareRotation", "[", 
+             RowBox[{"[", "1", "]"}], "]"}]}], "}"}], "]"}], "]"}]}], "}"}], 
+      ",", "\[IndentingNewLine]", 
+      RowBox[{"{", 
+       RowBox[{"Orange", ",", "Dashed", ",", 
+        RowBox[{"Line", "[", 
+         RowBox[{"Transpose", "[", 
+          RowBox[{"{", 
+           RowBox[{
+            RowBox[{"Range", "[", 
+             RowBox[{"Length", "@", 
+              RowBox[{"squareRotation", "[", 
+               RowBox[{"[", "2", "]"}], "]"}]}], "]"}], ",", 
+            RowBox[{"squareRotation", "[", 
+             RowBox[{"[", "2", "]"}], "]"}]}], "}"}], "]"}], "]"}]}], "}"}], 
+      ",", "\[IndentingNewLine]", 
+      RowBox[{"{", 
+       RowBox[{"Purple", ",", 
+        RowBox[{"Line", "[", 
+         RowBox[{"Transpose", "[", 
+          RowBox[{"{", 
+           RowBox[{
+            RowBox[{"Range", "[", 
+             RowBox[{"Length", "@", 
+              RowBox[{"squareRotation", "[", 
+               RowBox[{"[", "3", "]"}], "]"}]}], "]"}], ",", 
+            RowBox[{"squareRotation", "[", 
+             RowBox[{"[", "3", "]"}], "]"}]}], "}"}], "]"}], "]"}]}], "}"}], 
+      ",", "\[IndentingNewLine]", 
+      RowBox[{"{", 
+       RowBox[{"Orange", ",", 
+        RowBox[{"Line", "[", 
+         RowBox[{"Transpose", "[", 
+          RowBox[{"{", 
+           RowBox[{
+            RowBox[{"Range", "[", 
+             RowBox[{"Length", "@", 
+              RowBox[{"squareRotation", "[", 
+               RowBox[{"[", "4", "]"}], "]"}]}], "]"}], ",", 
+            RowBox[{"squareRotation", "[", 
+             RowBox[{"[", "4", "]"}], "]"}]}], "}"}], "]"}], "]"}]}], "}"}], 
+      ",", "\[IndentingNewLine]", 
+      RowBox[{"Inset", "[", 
+       RowBox[{"pidLegend", ",", 
+        RowBox[{"Scaled", "[", 
+         RowBox[{"{", 
+          RowBox[{"0.88", ",", "0.88"}], "}"}], "]"}]}], "]"}]}], 
+     "\[IndentingNewLine]", "}"}], ",", "\[IndentingNewLine]", 
+    RowBox[{"Frame", "\[Rule]", "True"}], ",", "\[IndentingNewLine]", 
+    RowBox[{"BaseStyle", "\[Rule]", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"FontFamily", "\[Rule]", "\"\<Times New Roman\>\""}], ",", 
+       RowBox[{"FontSize", "\[Rule]", " ", "12"}]}], "}"}]}], ",", 
+    "\[IndentingNewLine]", 
+    RowBox[{"LabelStyle", "\[Rule]", 
+     RowBox[{"Directive", "[", "Black", "]"}]}], ",", "\[IndentingNewLine]", 
+    RowBox[{"FrameLabel", "\[Rule]", 
+     RowBox[{"{", 
+      RowBox[{"\"\<Time step\>\"", ",", "\"\<Rotation Rates (pulse/s)\>\""}], 
+      "}"}]}], ",", "\[IndentingNewLine]", 
+    RowBox[{"AspectRatio", "\[Rule]", "0.27"}], ",", "\[IndentingNewLine]", 
+    RowBox[{"ImageSize", "\[Rule]", "700"}], ",", "\[IndentingNewLine]", 
+    RowBox[{"PlotRange", "\[Rule]", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"0", ",", "1200"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"-", "5"}], ",", "210"}], "}"}]}], "}"}]}], ",", 
+    "\[IndentingNewLine]", 
+    RowBox[{"PlotRangeClipping", "\[Rule]", "True"}], ",", 
+    "\[IndentingNewLine]", 
+    RowBox[{"ImagePadding", "\[Rule]", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"45", ",", "45"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"35", ",", "5"}], "}"}]}], "}"}]}]}], "\[IndentingNewLine]", 
+   "]"}]}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Export", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"NotebookDirectory", "[", "]"}], "<>", 
+     "\"\<figures/pid_err.pdf\>\""}], ",", "%"}], "]"}], ";"}]}], "Input"]
+},
+WindowSize->{1680, 938},
+WindowMargins->{{0, Automatic}, {Automatic, -1}},
+Magnification:>1.25 Inherited,
+FrontEndVersion->"10.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (December 4, \
+2014)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[558, 20, 1454, 39, 183, "Input"],
+Cell[2015, 61, 679, 18, 120, "Input"],
+Cell[2697, 81, 900, 22, 120, "Input"],
+Cell[3600, 105, 1847, 46, 309, "Input"],
+Cell[5450, 153, 953, 22, 141, "Input",
+ CellGroupingRules->{GroupTogetherGrouping, 10001.}],
+Cell[6406, 177, 534, 15, 57, "Input"],
+Cell[6943, 194, 724, 22, 57, "Input"],
+Cell[7670, 218, 453, 13, 57, "Input"],
+Cell[8126, 233, 747, 23, 57, "Input"],
+Cell[8876, 258, 442, 13, 57, "Input"],
+Cell[9321, 273, 785, 24, 57, "Input"],
+Cell[10109, 299, 412, 14, 57, "Input"],
+Cell[10524, 315, 2737, 73, 365, "Input"],
+Cell[13264, 390, 342, 10, 36, "Input"],
+Cell[13609, 402, 920, 21, 141, "Input"],
+Cell[14532, 425, 4000, 103, 393, "Input"]
+}
+]
+*)
+
+(* End of internal cache information *)
