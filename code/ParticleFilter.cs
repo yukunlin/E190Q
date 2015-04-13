@@ -47,13 +47,15 @@ namespace DrRobot.JaguarControl
             for (int i = 0; i < numParticles; i++)
             {
 
+                /*
                 double x = ContinuousUniform.Sample(rand, m.minX, m.maxX);
                 double y = ContinuousUniform.Sample(rand, m.minY, m.maxY);
                 double t = ContinuousUniform.Sample(rand, -Math.PI, Math.PI);
-                /*
+                */
+                
                 double x = ContinuousUniform.Sample(rand, -1, 1);
                 double y = ContinuousUniform.Sample(rand, -1, 1);
-                double t = ContinuousUniform.Sample(rand, -Math.PI/10, Math.PI/10);*/
+                double t = ContinuousUniform.Sample(rand, -Math.PI/10, Math.PI/10);
                 
                 particles[i] = new Particle(x, y, t);
             }

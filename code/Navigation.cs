@@ -103,7 +103,7 @@ namespace DrRobot.JaguarControl
         public Map map;
         public ParticleFilter pf;
 
-        public int numParticles = 500;
+        public int numParticles = 200;
         public double K_wheelRandomness = 0.15;//0.25
         public Random random = new Random();
         public bool newLaserData = false;
@@ -114,6 +114,51 @@ namespace DrRobot.JaguarControl
         private int laserStepSize = 3;
 
         public Object thisLock = new object();
+
+
+        
+        // Motion Planner Variables
+        const int numXCells = 20;
+        const int numYCells = 20;
+        const int maxNumNodes = 5000;
+        const float minWorkspaceX = -10.0f;
+        const float maxWorkspaceX = 10.0f;
+        const float minWorkspaceY = -10.0f;
+        const float maxWorkspaceY = 10.0f;
+
+        // Motion Planner Variables 
+        public double samplingCellSizeX, samplingCellSizeY;
+        public int numOccupiedCells;
+        public int[] occupiedCellsList;
+        public int[] numNodesInCell;
+        public Node[,] NodesInCells;
+        public Node[] trajList, nodeList;
+        public int trajSize, trajCurrentNode, numNodes;
+
+        public class Node
+        {
+            public double x, y;
+            public int lastNode;
+            public int nodeIndex;
+
+            public Node()
+            {
+                x = 0;
+                y = 0;
+                lastNode = 0;
+                nodeIndex = 0;
+            }
+
+            public Node(double _x, double _y, int _nodeIndex, int _lastNode)
+            {
+                x = _x;
+                y = _y;
+                nodeIndex = _nodeIndex;
+                lastNode = _lastNode;
+            }
+        }
+
+
         #endregion
 
 
@@ -209,6 +254,16 @@ namespace DrRobot.JaguarControl
             for (int i = 0; i < LaserData.Length; i++)                
                 laserAngles[i] = DrRobot.JaguarControl.JaguarCtrl.startAng + DrRobot.JaguarControl.JaguarCtrl.stepAng * i;
 
+            // MP variable setup
+            occupiedCellsList = new int[numXCells * numYCells];
+            numNodesInCell = new int[numXCells * numYCells];
+            NodesInCells = new Node[numXCells * numYCells, 500];
+            trajList = new Node[maxNumNodes];
+            nodeList = new Node[maxNumNodes];
+            numNodes = 0;
+            trajList[0] = new Node(0, 0, 0, 0);
+            trajSize = 0;
+
         }
 
         // This function is called from the dialogue window "Reset Button"
@@ -276,7 +331,7 @@ namespace DrRobot.JaguarControl
 
                     // Estimate the global state of the robot -x_est, y_est, t_est (lab 4)
 
-                        LocalizeEstWithParticleFilter();
+                    LocalizeEstWithParticleFilter();
 
                     
 
@@ -292,10 +347,10 @@ namespace DrRobot.JaguarControl
                             motionPlanRequired = false;
                         }
                         // Drive the robot to a desired Point (lab 3)
-                        FlyToSetPoint();
+                        //FlyToSetPoint();
 
                         // Follow the trajectory instead of a desired point (lab 3)
-                        //TrackTrajectory();
+                        TrackTrajectoryPRM();
 
                         // Follow the trajectory instead of a desired point (lab 3)
                         if (jaguarControl.AUTOMODE == jaguarControl.TRACKTRAJ)
@@ -574,7 +629,7 @@ namespace DrRobot.JaguarControl
             logFile = File.CreateText(@"C:\Users\CAPCOM\Desktop\190_lab4_data\" + "JaguarData_" + date + ".csv");
             startTime = DateTime.Now;
             loggingOn = true;
-            String header = "time, x odom, y odom, t odom, x st est, y st est, t st est, x Std, y Std, t Std ";
+            String header = "time, x odom, y odom, t odom, x st est, y st est, t st est, x Std, y Std, t Std, lat, long ";
             logFile.WriteLine(header);
         }
 
@@ -603,7 +658,7 @@ namespace DrRobot.JaguarControl
                 time = ts.TotalSeconds;
                  String newData = time.ToString() + ", " + _x.ToString() + ", " + _y.ToString() + ", " +
                      _theta.ToString() + ", " + x_est.ToString() + ", " + y_est.ToString() + ", " + t_est.ToString() 
-                     + ", " + xStd.ToString() + ", " + yStd.ToString() + ", " + tStd.ToString();
+                     + ", " + xStd.ToString() + ", " + yStd.ToString() + ", " + tStd.ToString() + ", " + this.jaguarControl.gpsRecord.latitude + ", " + this.jaguarControl.gpsRecord.longitude;
 
                 logFile.WriteLine(newData);
             }
@@ -869,11 +924,197 @@ namespace DrRobot.JaguarControl
 
         }
 
-        // THis function is called to construct a collision-free trajectory for the robot to follow
+
+        private void TrackTrajectoryPRM()
+        {
+            double distToCurrentNode = Math.Sqrt(Math.Pow(x_est - trajList[trajCurrentNode].x, 2) + Math.Pow(y_est - trajList[trajCurrentNode].y, 2));
+            
+            Console.WriteLine("desX: {0}, desY:{1}",desiredX,desiredY);
+            
+            if (distToCurrentNode < 0.17 && trajCurrentNode + 1 < trajSize)
+            {
+                trajCurrentNode++;
+                desiredX = trajList[trajCurrentNode].x;
+                desiredY = trajList[trajCurrentNode].y;
+                desiredT = 0;
+            }
+
+            FlyToSetPoint();
+        }
+
+
         private void PRMMotionPlanner()
         {
+            // Initialize sampling grid cell variables for weighted
+            // random selection of nodes to expand.
+            samplingCellSizeX = (maxWorkspaceX - minWorkspaceX) / numXCells;
+            samplingCellSizeY = (maxWorkspaceY - minWorkspaceY) / numYCells;
+            numOccupiedCells = 0;
+            for (int i = 0; i < numXCells * numYCells; i++)
+                numNodesInCell[i] = 0;
+            numNodes = 0;
+
+
+            // ****************** Additional Student Code: Start ************
+
+            // Put code here to expand the PRM until the goal node is reached,
+            // or until a max number of iterations is reached.
+
+
+            // Create and add the start Node
+            Node startNode = new Node(x_est, y_est, 0, 0);
+            Node goalNode = new Node(desiredX, desiredY, 0, 0);
+            Console.WriteLine("desX: {0}, desY:{1}", desiredX,desiredY);
+
+            AddNode(startNode);
+
+
+            // Loop until path created
+            bool pathFound = false;
+            int maxIterations = maxNumNodes;
+            int iterations = 0;
+            int randCellNumber;
+            int randNodeNumber;
+            Node randExpansionNode;
+            Random randGenerator = new Random();
+
+            double randDistance = 0;
+            double randOrientation = 0;
+
+            double distancex = 0;
+            double distancey = 0;
+            
+
+            while (iterations < maxIterations && !pathFound)
+            {
+                // Get expansion node
+                randCellNumber = random.Next(0, numOccupiedCells);
+                randNodeNumber = random.Next(0, numNodesInCell[occupiedCellsList[randCellNumber]]);
+                randExpansionNode = NodesInCells[occupiedCellsList[randCellNumber], randNodeNumber];
+                
+                // Generate new node
+                randDistance = 2*random.NextDouble();
+                randOrientation = 2*Math.PI*random.NextDouble()-Math.PI;
+                distancex = Math.Cos(randOrientation)*randDistance;
+                distancey = Math.Sin(randOrientation)*randDistance;
+
+                Node newNode = new Node(randExpansionNode.x + distancex, randExpansionNode.y + distancey, numNodes, randExpansionNode.nodeIndex);
+
+                // Colllision checking
+                var collision = map.CollisionFound(randExpansionNode, newNode, ROBOTRADIUS);
+                if (!collision)
+                {
+                    AddNode(newNode);
+
+                    // check to goal node
+                    var collisionToGoal = map.CollisionFound(newNode, goalNode, ROBOTRADIUS);
+
+                    if (!collisionToGoal)
+                    {
+                        goalNode.nodeIndex = numNodes;
+                        goalNode.lastNode = newNode.nodeIndex;
+                        AddNode(goalNode);
+                        pathFound = true;
+                    }
+                }
+
+               
+
+                // Increment number of iterations
+                iterations++;
+            }
+
+
+            // Create the trajectory to follow
+            BuildTraj(goalNode);
+
+
+            // ****************** Additional Student Code: End   ************
+
+
+
 
         }
+
+
+
+
+        // This function is used to implement weighted sampling in 
+        // when randomly selecting nodes to expand from in the PRM.
+        // The work environment is divided into a grid of cells.
+        // This function returns the cell number.
+        int GetCellNumber(double x, double y)
+        {
+            int cell = (int)Math.Floor((x - minWorkspaceX) / samplingCellSizeX) + (int)(Math.Floor((y - minWorkspaceY) / samplingCellSizeY) * numXCells);
+            return cell;
+        }
+
+        // This function is also used to implement weighted sampling in 
+        // when randomly selecting nodes to expand from in the PRM.
+        // When new nodes for the PRM are generated, they must be added
+        // to a variety of memory locations.
+        // First, the node is stored in a list of nodes specific to a grid
+        // cell. If this is the first node in that grid cell, the list of 
+        // occupied cells is updated. Then, the node is stored in a general
+        // list that keeps track of all nodes for building the final
+        // trajectory.
+
+        void AddNode(Node n)
+        {
+            int cellNumber = GetCellNumber(n.x, n.y);
+            if (numNodesInCell[cellNumber] < 1)
+            {
+                occupiedCellsList[numOccupiedCells] = cellNumber;
+                numOccupiedCells++;
+            }
+
+            if (numNodesInCell[cellNumber] < 400)
+            {
+                NodesInCells[cellNumber, numNodesInCell[cellNumber]] = n;
+                numNodesInCell[cellNumber]++;
+
+                // Add to nodelist
+                nodeList[numNodes] = n;
+                numNodes++;
+            }
+            return;
+        }
+
+
+        // Given the goal node, this function will recursively add the
+        // parent node to a trajectory until the start node is reached.
+        // The result is a list of nodes that connect the start node to
+        // the goal node with collision free edges.
+
+        void BuildTraj(Node goalNode)
+        {
+            Node[] tempList = new Node[maxNumNodes];
+            for (int j = 0; j < maxNumNodes; j++)
+                trajList[j] = new Node(0, 0, 0, 0);
+
+            tempList[0] = goalNode;
+            int i = 1;
+
+            // Make backwards traj by looking at parent of every child node
+            while (tempList[i - 1].nodeIndex != 0)
+            {
+                tempList[i] = nodeList[tempList[i - 1].lastNode];
+                i++;
+            }
+
+            // Reverse trajectory order
+            for (int j = 0; j < i; j++)
+            {
+                trajList[j] = tempList[i - j - 1];
+            }
+
+            // Set size of trajectory and initialize node counter
+            trajSize = i;
+            trajCurrentNode = 0;
+
+            return;
+        }
+
 
 
         #endregion
@@ -977,7 +1218,7 @@ namespace DrRobot.JaguarControl
             pf.Predict();
             count++;
 
-            if (Math.Abs(_diffEncoderPulseL) > 0 || Math.Abs(_diffEncoderPulseR) > 0 && count==5)
+            if (Math.Abs(_diffEncoderPulseL) > 0 || Math.Abs(_diffEncoderPulseR) > 0)
             {
                 pf.Correct();
             }

@@ -1347,6 +1347,8 @@ namespace DrRobot.JaguarControl
             navigation._accumL = 0;
             navigation._accumR = 0;
 
+            navigation.motionPlanRequired = true;
+
         }
 
         # endregion
