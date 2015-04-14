@@ -40,7 +40,7 @@ namespace DrRobot.JaguarControl
         private AxDDrRobotSentinel_Simulator simulatedJaguar;
         private Thread controlThread;
         private short motorSignalL, motorSignalR;
-        private short _desiredRotRateR, _desiredRotRateL;
+        private short _desiredRotRateR, _desiredRotRateL, _desiredRotRateRPrev, _desiredRotRateLPrev;
         public bool runThread = true;
         public bool loggingOn;
         StreamWriter logFile;
@@ -103,7 +103,7 @@ namespace DrRobot.JaguarControl
         public Map map;
         public ParticleFilter pf;
 
-        public int numParticles = 200;
+        public int numParticles = 150;
         public double K_wheelRandomness = 0.15;//0.25
         public Random random = new Random();
         public bool newLaserData = false;
@@ -111,7 +111,6 @@ namespace DrRobot.JaguarControl
         public double laserMinRange = 0.2;
         public double[] laserAngles;
         private int laserCounter;
-        private int laserStepSize = 3;
 
         public Object thisLock = new object();
 
@@ -218,6 +217,10 @@ namespace DrRobot.JaguarControl
             desiredX = 0;// initialX;
             desiredY = 0;// initialY;
             desiredT = 0;// initialT;
+
+            // Set previous desired rotation rate
+            _desiredRotRateLPrev = 0;
+            _desiredRotRateRPrev = 0;
 
             // Reset Localization Variables
             _wheelDistanceR = 0;
@@ -343,14 +346,14 @@ namespace DrRobot.JaguarControl
                         if (motionPlanRequired)
                         {
                             // Construct a new trajectory (lab 5)
-                            PRMMotionPlanner();
+                           // PRMMotionPlanner();
                             motionPlanRequired = false;
                         }
                         // Drive the robot to a desired Point (lab 3)
-                        //FlyToSetPoint();
+                        FlyToSetPoint();
 
                         // Follow the trajectory instead of a desired point (lab 3)
-                        TrackTrajectoryPRM();
+                        //TrackTrajectoryPRM();
 
                         // Follow the trajectory instead of a desired point (lab 3)
                         if (jaguarControl.AUTOMODE == jaguarControl.TRACKTRAJ)
@@ -535,19 +538,23 @@ namespace DrRobot.JaguarControl
         {
 
             short maxPosOutput = 32767;
+            short takeOffMax = 1000;
 
-            double K_p = 2.5;
+            double K_p = 0.35;
+            double K_f = 7.0;
             double K_i = 0.0;
-            double K_d = 0.1;
+            double K_d = 0.0;
 
             double deltaTs = _milliElapsed / 1000.0;
 
+            //_desiredRotRateL = _desiredRotRateR = 190;
 
             double maxErr = 8000 / deltaTs;
-            //_desiredRotRateL = _desiredRotRateR = 250;
+            //_desiredRotRateL = 250;
+            //_desiredRotRateR = 250;
 
-            _actRotRateL = movingAverage(_movingAvgValuesL,_diffEncoderPulseL / deltaTs,5);
-            _actRotRateR = movingAverage(_movingAvgValuesR,_diffEncoderPulseR / deltaTs,5);
+            _actRotRateL = movingAverage(_movingAvgValuesL,_diffEncoderPulseL / deltaTs,10);
+            _actRotRateR = movingAverage(_movingAvgValuesR,_diffEncoderPulseR / deltaTs,10);
 
 
             e_L = _desiredRotRateL - _actRotRateL;
@@ -572,23 +579,45 @@ namespace DrRobot.JaguarControl
             //motorSignalL = (short)(zeroOutput + desiredRotRateL * 100);// (zeroOutput + u_L);
             //motorSignalR = (short)(zeroOutput - desiredRotRateR * 100);//(zeroOutput - u_R);
 
-            const double DEADBAND = 7500;
+            const double DEADBAND = 8000;
 
-            _accumL += u_L;
-            _accumR += u_R;
+            if (Math.Sign(_desiredRotRateR) == Math.Sign(_desiredRotRateRPrev))
+            {
+                _accumL += u_L;
+            }
+            else
+            {
+                _accumL = 0;
+            }
+
+            if (Math.Sign(_desiredRotRateRPrev) == Math.Sign(_desiredRotRateLPrev))
+            {
+                _accumR += u_R;
+            }
+            else
+            {
+                _accumR = 0;
+            }
+
+
 
             if (_desiredRotRateL == 0)
                 motorSignalL = ZEROOUTPUT;
             else
-                motorSignalL = (short)(ZEROOUTPUT + Math.Sign(_desiredRotRateL) * DEADBAND + _accumL);
+                motorSignalL = (short) (ZEROOUTPUT + Math.Sign(_desiredRotRateL)*DEADBAND + K_f*_desiredRotRateL + _accumL);
 
             if (_desiredRotRateR == 0)
                 motorSignalR = ZEROOUTPUT;
             else
-                motorSignalR = (short)(ZEROOUTPUT - Math.Sign(_desiredRotRateR) * DEADBAND - _accumR);
+                motorSignalR = (short) (ZEROOUTPUT - Math.Sign(_desiredRotRateR)*DEADBAND - K_f*_desiredRotRateR - _accumR);
 
-            motorSignalL = (short)Math.Min(maxPosOutput, Math.Max(0, (int)motorSignalL));
-            motorSignalR = (short)Math.Min(maxPosOutput, Math.Max(0, (int)motorSignalR));
+            motorSignalL = (short)Math.Min(maxPosOutput-takeOffMax, Math.Max(takeOffMax, (int)motorSignalL));
+            motorSignalR = (short)Math.Min(maxPosOutput-takeOffMax, Math.Max(takeOffMax, (int)motorSignalR));
+
+            _desiredRotRateLPrev = _desiredRotRateL;
+            _desiredRotRateRPrev = _desiredRotRateR;
+
+            Console.WriteLine("ml: {0}, mr: {1}", motorSignalL, motorSignalR);
 
 
         }
@@ -626,10 +655,10 @@ namespace DrRobot.JaguarControl
             //int fileCnt= 0;
             String date = DateTime.Now.Year.ToString() + "-" + DateTime.Now.Month.ToString() + "-" + DateTime.Now.Day.ToString() + "-" + DateTime.Now.Minute.ToString();
             ToString();
-            logFile = File.CreateText(@"C:\Users\CAPCOM\Desktop\190_lab4_data\" + "JaguarData_" + date + ".csv");
+            logFile = File.CreateText(@"C:\Users\CAPCOM\Desktop\" + "JaguarData_" + date + ".csv");
             startTime = DateTime.Now;
             loggingOn = true;
-            String header = "time, x odom, y odom, t odom, x st est, y st est, t st est, x Std, y Std, t Std, lat, long ";
+            String header = "time, x odom, y odom, t odom, x st est, y st est, t st est, x Std, y Std, t Std, lat, long, actRotL, actRotR, desRotL, desRotR, uL, uR";
             logFile.WriteLine(header);
         }
 
@@ -658,7 +687,8 @@ namespace DrRobot.JaguarControl
                 time = ts.TotalSeconds;
                  String newData = time.ToString() + ", " + _x.ToString() + ", " + _y.ToString() + ", " +
                      _theta.ToString() + ", " + x_est.ToString() + ", " + y_est.ToString() + ", " + t_est.ToString() 
-                     + ", " + xStd.ToString() + ", " + yStd.ToString() + ", " + tStd.ToString() + ", " + this.jaguarControl.gpsRecord.latitude + ", " + this.jaguarControl.gpsRecord.longitude;
+                     + ", " + xStd.ToString() + ", " + yStd.ToString() + ", " + tStd.ToString() + ", " + this.jaguarControl.gpsRecord.latitude + ", " + this.jaguarControl.gpsRecord.longitude
+                     +"," + _actRotRateL + "," + _actRotRateR + "," + _desiredRotRateL + "," + _desiredRotRateR+"," + motorSignalL + "," + motorSignalR;
 
                 logFile.WriteLine(newData);
             }
@@ -734,7 +764,7 @@ namespace DrRobot.JaguarControl
             }
             else
             {
-                rotateToPoint(0, 0.17);
+                rotateToPoint(0, 0.1);
             }
 
 
@@ -771,6 +801,7 @@ namespace DrRobot.JaguarControl
 
         private void rotateToPoint(double desiredV, double threshold)
         {
+            Console.WriteLine("rotate to point");
             double headingX = Math.Cos(desiredT);
             double headingY = Math.Sin(desiredT);
             //double rotateX = headingX*Math.Cos(-t_est) - headingY*Math.Sin(-t_est);
@@ -782,13 +813,13 @@ namespace DrRobot.JaguarControl
 
             if (Math.Abs(rotateTheta) > threshold)
             {
-                double desiredW = Math.Abs(Kbeta * .1) * rotateTheta;
+                double desiredW = Math.Abs(Kbeta * .15) * rotateTheta;
 
                 // calculate desired wheel rotation rate
                 double rightV = (desiredV + desiredW * ROBOTRADIUS) / WHEELRADIUS;
                 double leftV = (desiredV - desiredW * ROBOTRADIUS) / WHEELRADIUS;
 
-                double scaleRatio = limitMotorSpeed(rightV, leftV);
+                double scaleRatio = limitMotorSpeed(rightV, leftV, 0.3);
 
                 _desiredRotRateR = (short)(pulsePerMeter * scaleRatio * rightV);
                 _desiredRotRateL = (short)(pulsePerMeter * scaleRatio * leftV);
@@ -834,7 +865,7 @@ namespace DrRobot.JaguarControl
             double rightV = (desiredV + desiredW * ROBOTRADIUS) / WHEELRADIUS;
             double leftV = (desiredV - desiredW * ROBOTRADIUS) / WHEELRADIUS;
 
-            double scaleRatio = limitMotorSpeed(rightV, leftV);
+            double scaleRatio = limitMotorSpeed(rightV, leftV, 0.3);
 
             _desiredRotRateR = (short)(pulsePerMeter * scaleRatio * rightV);
             _desiredRotRateL = (short)(pulsePerMeter * scaleRatio * leftV);
@@ -856,9 +887,8 @@ namespace DrRobot.JaguarControl
         }
 
 
-        private double limitMotorSpeed(double rightV, double leftV)
+        private double limitMotorSpeed(double rightV, double leftV, double maxSpeed)
         {
-            var maxSpeed = 0.33;
             double leftRatio = Math.Max(1, Math.Abs(leftV) / maxSpeed);
             double rightRatio = Math.Max(1, Math.Abs(rightV) / maxSpeed);
 

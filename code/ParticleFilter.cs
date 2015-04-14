@@ -33,8 +33,8 @@ namespace DrRobot.JaguarControl
         private Normal dist;
 
 
-        private double SD = .4; 
-        public int SENSORSTEP = 15;
+        private double SD = .3; 
+        public int SENSORSTEP = 10;
 
         public ParticleFilter(int numParticles, Navigation n, Map m)
         {
@@ -54,8 +54,8 @@ namespace DrRobot.JaguarControl
                 */
                 
                 double x = ContinuousUniform.Sample(rand, -1, 1);
-                double y = ContinuousUniform.Sample(rand, -1, 1);
-                double t = ContinuousUniform.Sample(rand, -Math.PI/10, Math.PI/10);
+                double y = ContinuousUniform.Sample(rand, -1, 1) - 11;
+                double t = ContinuousUniform.Sample(rand, -Math.PI/10, Math.PI/10)-1.57;
                 
                 particles[i] = new Particle(x, y, t);
             }
@@ -144,8 +144,8 @@ namespace DrRobot.JaguarControl
                 }
                 double dice = ContinuousUniform.Sample(rand, 0, 1);
 
-                if (dice <= randProba) //TODO: ENABLE AMCL
-                //if (false)
+               // if (dice <= randProba) //TODO: ENABLE AMCL
+                if (false)
                 {
                     double radSd = 10;
                     double thetaSd = 0.707;
