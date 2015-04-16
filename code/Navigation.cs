@@ -153,12 +153,12 @@ namespace DrRobot.JaguarControl
             pf = new ParticleFilter(numParticles, this, map);
 
             _currentWP = 1;
-            numWPs = 5;
+            numWPs = 7;
             _waypoints = new double[numWPs, 2];
             _waypoints[0, 0] = -3;
             _waypoints[0, 1] = -8;
 
-            _waypoints[1, 0] = -1;
+            _waypoints[1, 0] = -0.5;
             _waypoints[1, 1] = -8;
 
             _waypoints[2, 0] = 2;
@@ -168,7 +168,16 @@ namespace DrRobot.JaguarControl
             _waypoints[3, 1] = -23;
 
             _waypoints[4, 0] = 3;
-            _waypoints[4, 1] = -27;
+            _waypoints[4, 1] = -26;
+
+            _waypoints[5, 0] = 0;
+            _waypoints[5, 1] = -29;
+
+            _waypoints[6, 0] = 0;
+            _waypoints[6, 1] = -31;
+
+            //_waypoints[4, 0] = 3;
+            //_waypoints[4, 1] = -27;
 
             this.Initialize();
 
@@ -272,6 +281,9 @@ namespace DrRobot.JaguarControl
             _trajX.Clear();
             _trajY.Clear();
             _trajT.Clear();
+
+            _currentWP = 1;
+            pf.ResetPF();
         }
         #endregion
 
@@ -716,13 +728,13 @@ namespace DrRobot.JaguarControl
 
             // ****************** Additional Student Code: End   ************                
         }
-
+        /*
         public double constrainAngle(double angle)
         {
             angle = (angle > Math.PI) ? angle % (2 * Math.PI) - 2 * Math.PI : angle;
             angle = (angle < -Math.PI) ? angle % (2 * Math.PI) + 2 * Math.PI : angle;
             return angle;
-        }
+        }*/
 
         private void PointTrack(double goalX, double goalY, double goalT)
         {
@@ -746,9 +758,9 @@ namespace DrRobot.JaguarControl
                 alpha = 0; //close enough, stop caring about alpha.
             double beta = alpha - dt;
 
-            dt = constrainAngle(dt);
-            alpha = constrainAngle(alpha);
-            beta = constrainAngle(beta);
+            dt = boundAngle(dt);
+            alpha = boundAngle(alpha);
+            beta = boundAngle(beta);
 
             //Threshold close enough values to zero to avoid jitter
             if (pho < 0.04)
@@ -795,6 +807,13 @@ namespace DrRobot.JaguarControl
             {
                 leftWheelVelocity = maxVelocity / Math.Abs(rightWheelVelocity) * leftWheelVelocity;
                 rightWheelVelocity = Math.Sign(rightWheelVelocity) * maxVelocity;
+            }
+
+            if (Math.Abs(rightWheelVelocity - leftWheelVelocity) > maxVelocity)
+            {
+                double scaleRatio = maxVelocity/Math.Abs(rightWheelVelocity - leftWheelVelocity);
+                leftWheelVelocity = scaleRatio * leftWheelVelocity;
+                rightWheelVelocity = scaleRatio * rightWheelVelocity;
             }
 
             _desiredRotRateL = (short)(leftWheelVelocity / (2 * Math.PI * WHEELRADIUS) * PULSESPERROTATION);
@@ -1343,7 +1362,7 @@ namespace DrRobot.JaguarControl
             pf.Predict();
             count++;
 
-            if (Math.Abs(_diffEncoderPulseL) > 0 || Math.Abs(_diffEncoderPulseR) > 0)
+            if ((Math.Abs(_diffEncoderPulseL) > 0 || Math.Abs(_diffEncoderPulseR) > 0) && count % 5 == 0)
             {
                 pf.Correct();
             }

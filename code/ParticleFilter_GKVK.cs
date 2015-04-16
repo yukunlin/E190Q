@@ -92,14 +92,14 @@ namespace DrRobot.JaguarControl
                 aTravelled = (newWheelDistanceR - newWheelDistanceL) / (2 * (navigation.ROBOTRADIUS));
 
                 tForTravel = particles[i].t + aTravelled * 0.5;
-                tForTravel = navigation.constrainAngle(tForTravel);
+                tForTravel = Navigation.boundAngle(tForTravel);
 
                 xrandom = K_posRandomness * dTravelled * navigation.RandomGaussian();
                 yrandom = K_posRandomness * dTravelled * navigation.RandomGaussian();
 
                 particles[i].x = particles[i].x + dTravelled * Math.Cos(tForTravel) + xrandom;
                 particles[i].y = particles[i].y + dTravelled * Math.Sin(tForTravel) + yrandom;
-                particles[i].t = navigation.constrainAngle(particles[i].t + aTravelled);
+                particles[i].t = Navigation.boundAngle(particles[i].t + aTravelled);
             }
         }
 

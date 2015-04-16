@@ -64,6 +64,27 @@ namespace DrRobot.JaguarControl
             }
         }
 
+        public void ResetPF()
+        {
+            for (int i = 0; i < particles.Length; i++)
+            {
+
+                /*
+                double x = ContinuousUniform.Sample(rand, m.minX, m.maxX);
+                double y = ContinuousUniform.Sample(rand, m.minY, m.maxY);
+                double t = ContinuousUniform.Sample(rand, -Math.PI, Math.PI);
+                */
+
+                double x = ContinuousUniform.Sample(rand, -1, 1) - 3;
+                double y = ContinuousUniform.Sample(rand, -1, 1) - 8;
+                double t = ContinuousUniform.Sample(rand, -Math.PI / 10, Math.PI / 10);//-1.57;
+
+                particles[i].x = x;
+                particles[i].y = y;
+                particles[i].t = t;
+            }
+        }
+
         public void Predict()
         {
             for (int i = 0; i < particles.Length; i++)
