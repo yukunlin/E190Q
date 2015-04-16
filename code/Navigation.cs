@@ -1352,7 +1352,6 @@ namespace DrRobot.JaguarControl
             x_est = estState[0];
             y_est = estState[1];
             t_est = estState[2];
-            Console.WriteLine(pf.laserOffset);
 
 
             // ****************** Additional Student Code: End   ************
