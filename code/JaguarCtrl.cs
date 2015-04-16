@@ -328,7 +328,7 @@ namespace DrRobot.JaguarControl
                 var listOfXs = new List<double>();
                 var listOfYs = new List<double>();
 
-                for (int i = 0; i < navigation.LaserData.Length; i = i + navigation.pf.SENSORSTEP)
+                for (int i = navigation.pf.laserOffset; i < navigation.LaserData.Length; i = i + navigation.pf.SENSORSTEP)
                 {
                     var angle = startAngle + i*stepAng;
                     double distance = navigation.LaserData[i];

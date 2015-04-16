@@ -717,7 +717,7 @@ namespace DrRobot.JaguarControl
             // ****************** Additional Student Code: End   ************                
         }
 
-        private double constrainAngle(double angle)
+        public double constrainAngle(double angle)
         {
             angle = (angle > Math.PI) ? angle % (2 * Math.PI) - 2 * Math.PI : angle;
             angle = (angle < -Math.PI) ? angle % (2 * Math.PI) + 2 * Math.PI : angle;
@@ -844,6 +844,9 @@ namespace DrRobot.JaguarControl
             // calculate x, y and theta to desired point
             var deltaX = desiredX - x_est;
             var deltaY = desiredY - y_est;
+
+            _goalX = desiredX;
+            _goalY = desiredY;
 
             const double distanceThreshold = 0.15;
             var distanceToTarget = Math.Sqrt(Math.Pow(deltaX, 2) + Math.Pow(deltaY, 2));
@@ -1349,6 +1352,8 @@ namespace DrRobot.JaguarControl
             x_est = estState[0];
             y_est = estState[1];
             t_est = estState[2];
+            Console.WriteLine(pf.laserOffset);
+
 
             // ****************** Additional Student Code: End   ************
 
@@ -1427,7 +1432,7 @@ namespace DrRobot.JaguarControl
         // Often random guassian numbers are used in particle filters. This
         // function might help.
 
-        double RandomGaussian()
+        public double RandomGaussian()
         {
 	        double U1, U2, V1=0, V2;
 	        double S = 2.0;

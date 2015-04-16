@@ -35,6 +35,7 @@ namespace DrRobot.JaguarControl
 
         private double SD = .3; 
         public int SENSORSTEP = 10;
+        public int laserOffset;
 
         public ParticleFilter(int numParticles, Navigation n, Map m)
         {
@@ -43,6 +44,8 @@ namespace DrRobot.JaguarControl
             this.m = m;
             rand = new Random();
             dist = new Normal(0, SD);
+            laserOffset = 0;
+
             // randomly assigns particle location
             for (int i = 0; i < numParticles; i++)
             {
@@ -79,9 +82,10 @@ namespace DrRobot.JaguarControl
             List<double> laserAbridged = new List<double>();
             List<double> laserAngles = new List<double>();
             double startAng = DrRobot.JaguarControl.JaguarCtrl.startAng;
+            
 
             // abridged laser scan data
-            for (int i = 0; i < laserData.Length; i = i + SENSORSTEP)
+            for (int i = laserOffset; i < laserData.Length - laserOffset; i = i + SENSORSTEP)
             {
                 var distance = laserData[i]/1000.0;
                 if (laserData[i] < 250)
@@ -90,7 +94,9 @@ namespace DrRobot.JaguarControl
                 }
                 
                 laserAbridged.Add(distance); // converted to meters
-                laserAngles.Add(n.laserAngles[i] - Math.PI / 2 );
+                laserAngles.Add(n.laserAngles[i] - Math.PI / 2);
+
+                
             }
 
             // calculate expected value based on odometry
@@ -187,6 +193,9 @@ namespace DrRobot.JaguarControl
 
         public void Correct()
         {
+
+            laserOffset = (laserOffset + 3) % SENSORSTEP;
+
             // calculate all particle weights
             double weightAccum = 0;
             for (int i = 0; i < particles.Length; i++)
