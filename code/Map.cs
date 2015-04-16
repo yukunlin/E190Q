@@ -26,14 +26,14 @@ namespace DrRobot.JaguarControl
         {
 
             // count number of lines in CSV file
-            numMapSegments = File.ReadAllLines(@"C:\Users\gkhadge\Downloads\extended_map2.csv").Length;
+            numMapSegments = File.ReadAllLines(@"C:\Users\Capcom\Desktop\extended_map.csv").Length;
             mapSegmentCorners = new double[numMapSegments,2,2];
             segmentSizes = new double[numMapSegments];
             slopes = new double[numMapSegments];
             intercepts = new double[numMapSegments];
 
             // open CSV file
-            var reader = new StreamReader(File.OpenRead(@"C:\Users\gkhadge\Downloads\extended_map2.csv"));
+            var reader = new StreamReader(File.OpenRead(@"C:\Users\Capcom\Desktop\extended_map.csv"));
             int r = 0;
 
             // read line by line

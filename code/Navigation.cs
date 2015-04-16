@@ -19,7 +19,6 @@ namespace DrRobot.JaguarControl
         public int _currentWP;
 
         public long[] LaserData = new long[DrRobot.JaguarControl.JaguarCtrl.DISDATALEN];
-        public double initialX, initialY, initialT;
         public double _x, _y, _theta;
         public double x_est, y_est, t_est;
         public double desiredX, desiredY, desiredT;
@@ -29,17 +28,9 @@ namespace DrRobot.JaguarControl
         public double _currentEncoderPulseL, _currentEncoderPulseR;
         public double _lastEncoderPulseL, _lastEncoderPulseR;
         public double _wheelDistanceR, _wheelDistanceL;
-        public double tiltAngle, zoom;
         public double currentAccel_x, currentAccel_y, currentAccel_z;
-        public double lastAccel_x, lastAccel_y, lastAccel_z;
-        public double currentGyro_x, currentGyro_y, currentGyro_z;
-        public double last_v_x, last_v_y;
-        public double filteredAcc_x, filteredAcc_y;
 
-        public int robotType, controllerType;
-        enum ROBOT_TYPE { SIMULATED, REAL };
-        enum CONTROLLERTYPE { MANUALCONTROL, POINTTRACKER, EXPERIMENT };
-        public bool motionPlanRequired, displayParticles, displayNodes, displaySimRobot;
+        public bool motionPlanRequired;
         private JaguarCtrl jaguarControl;
         private AxDRROBOTSentinelCONTROLLib.AxDDrRobotSentinel realJaguar;
         private AxDDrRobotSentinel_Simulator simulatedJaguar;
@@ -57,9 +48,7 @@ namespace DrRobot.JaguarControl
         public double _angleTravelled, _distanceTravelled;
         private double _diffEncoderPulseL, _diffEncoderPulseR;
         private double maxVelocity = 0.50;
-        //private double Kpho = 3.0;
-        //private double Kalpha = 8;//8
-        //private double Kbeta = -1;//-0.5//-1.0;
+
         private double Kpho = 1;
         private double Kalpha = 5;//2//8
         private double Kbeta = -1;//-0.5//-1.0;
@@ -68,10 +57,6 @@ namespace DrRobot.JaguarControl
         DateTime startTime;
 
 
-        public short K_P = 45;
-        public short K_I = 8;
-        public short K_D = 5;
-        public short frictionComp = 8750;
         public double e_sum_R, e_sum_L;
         public double u_R = 0;
         public double u_L = 0;
@@ -79,9 +64,6 @@ namespace DrRobot.JaguarControl
         public double e_L = 0;
         public double e_L_last = 0;
         public double e_R_last = 0;
-
-        public double rotRateL, rotRateR;
-        public double K_p, K_i, K_d, maxErr;
 
         public double accCalib_x = 18;
         public double accCalib_y = 4;
@@ -113,13 +95,8 @@ namespace DrRobot.JaguarControl
         public ParticleFilter pf;
 
         public int numParticles = 150;
-        public double K_wheelRandomness = 0.15;//0.25
         public Random random = new Random();
-        public bool newLaserData = false;
-        public double laserMaxRange = 4.0;
-        public double laserMinRange = 0.2;
         public double[] laserAngles;
-        private int laserCounter;
 
         public Object thisLock = new object();
 
@@ -148,14 +125,6 @@ namespace DrRobot.JaguarControl
             public double x, y;
             public int lastNode;
             public int nodeIndex;
-
-            public Node()
-            {
-                x = 0;
-                y = 0;
-                lastNode = 0;
-                nodeIndex = 0;
-            }
 
             public Node(double _x, double _y, int _nodeIndex, int _lastNode)
             {
@@ -275,11 +244,6 @@ namespace DrRobot.JaguarControl
             motionPlanRequired = false;
 
             // Set visual display
-            tiltAngle = 25.0;
-            displayParticles = true;
-            displayNodes = true;
-            displaySimRobot = true;
-
             laserAngles = new double[LaserData.Length];
             for (int i = 0; i < LaserData.Length; i++)                
                 laserAngles[i] = DrRobot.JaguarControl.JaguarCtrl.startAng + DrRobot.JaguarControl.JaguarCtrl.stepAng * i;
@@ -355,15 +319,9 @@ namespace DrRobot.JaguarControl
                     // Update the global state of the robot - x,y,t (lab 2)
                     LocalizeRealWithOdometry();
 
-                    // Update the global state of the robot - x,y,t (lab 2)
-                    //LocalizeRealWithIMU();
-
-
                     // Estimate the global state of the robot -x_est, y_est, t_est (lab 4)
-
                     LocalizeEstWithParticleFilter();
 
-                    
 
                     // If using the point tracker, call the function
                     if (jaguarControl.controlMode == jaguarControl.AUTONOMOUS)
@@ -466,11 +424,6 @@ namespace DrRobot.JaguarControl
                         currentAccel_x = jaguarControl.getAccel_x();
                         currentAccel_y = jaguarControl.getAccel_y();
                         currentAccel_z = jaguarControl.getAccel_z();
-                        lastAccel_x = currentAccel_x;
-                        lastAccel_y = currentAccel_y;
-                        lastAccel_z = currentAccel_z;
-                        last_v_x = 0;
-                        last_v_y = 0;
 
                     }
                     catch (Exception e) { }
@@ -484,12 +437,6 @@ namespace DrRobot.JaguarControl
                 _currentEncoderPulseR = 0;
                 _lastEncoderPulseL = 0;
                 _lastEncoderPulseR = 0;
-                lastAccel_x = 0;
-                lastAccel_y = 0;
-                lastAccel_z = 0;
-                last_v_x = 0;
-                last_v_y = 0;
-
             }
         }
 
@@ -513,8 +460,6 @@ namespace DrRobot.JaguarControl
                     LaserData[i] = (long)Math.Round(1000.0 * map.GetClosestWallDistance(_x, _y, _theta -1.57 + laserAngles[i]));
                     
                 }
-                laserCounter = 0;
-                newLaserData = true;
             }
             else
             {
@@ -877,10 +822,10 @@ namespace DrRobot.JaguarControl
             return next;
         }
 
-        private int WaypointTrack(double x_est, double y_est, int currentWP)
+        private int WaypointTrack(double xEst, double yEst, int currentWP)
         {
             double m = (_waypoints[currentWP,1]-_waypoints[currentWP-1,1])/(_waypoints[currentWP,0]-_waypoints[currentWP-1,0]+0.001);
-            bool next = LineTrack( m, _waypoints[currentWP,0], _waypoints[currentWP,1], x_est, y_est );
+            bool next = LineTrack( m, _waypoints[currentWP,0], _waypoints[currentWP,1], xEst, yEst );
 
             if (next && currentWP < (numWPs -1))
                 ++currentWP;
@@ -894,9 +839,8 @@ namespace DrRobot.JaguarControl
         {
             //PointTrack(desiredX, desiredY, desiredT);
             //LineTrack(1, desiredX, desiredY, _x, _y);
-            _currentWP = WaypointTrack(x_est, y_est, _currentWP);
 
-            /*
+            
             // calculate x, y and theta to desired point
             var deltaX = desiredX - x_est;
             var deltaY = desiredY - y_est;
@@ -920,7 +864,6 @@ namespace DrRobot.JaguarControl
                 _desiredRotRateL = 0;
             if (Math.Abs(_desiredRotRateR) < threshold)
                 _desiredRotRateR = 0;
-            */
         }
 
         public static double squareSumPoints(double x1, double y1, double x2, double y2)
@@ -1076,6 +1019,7 @@ namespace DrRobot.JaguarControl
         // This function is called to follow a trajectory constructed by PRMMotionPlanner()
         private void TrackTrajectory()
         {
+            /*
             if (_trajX.Count > 0)
             {
                 // calculate x, y and theta to desired point
@@ -1097,7 +1041,9 @@ namespace DrRobot.JaguarControl
                     _trajT.RemoveFirst();
                 }
             }
+            */
 
+            _currentWP = WaypointTrack(x_est, y_est, _currentWP);
         }
 
 
