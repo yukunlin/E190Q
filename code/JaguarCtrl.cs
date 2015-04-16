@@ -434,6 +434,14 @@ namespace DrRobot.JaguarControl
                 g.DrawEllipse(penEst, xCorEst, yCorEst, (int)(2 * radEst * mapResolution), (int)(2 * radEst * mapResolution));
 
 
+                int xGoal = (int)(xCenter + (navigation._goalX - radEst) * mapResolution);
+                int yGoal = (int)(yCenter - (navigation._goalY + radEst) * mapResolution);
+
+                Pen drawGoal = new Pen(Color.Orange);
+                //g.DrawLine(penEst, xLineEst, yLineEst, xParEst, yParEst);
+                g.DrawEllipse(penEst, xGoal, yGoal, (int)(2 * radEst * mapResolution), (int)(2 * radEst * mapResolution));
+
+
 
                 // Draw the bitmap to the form
                 this.CreateGraphics().DrawImageUnscaled(gBuffer, 0, 0);

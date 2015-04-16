@@ -32,6 +32,8 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(JaguarCtrl));
             this.groupBoxGPSIMU = new System.Windows.Forms.GroupBox();
             this.lblBatVol = new System.Windows.Forms.Label();
+            this.realJaguar = new AxDRROBOTSentinelCONTROLLib.AxDDrRobotSentinel();
+            this.pictureBoxIMUGPS = new System.Windows.Forms.PictureBox();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.textBoxGPSRCV = new System.Windows.Forms.TextBox();
@@ -105,13 +107,13 @@
             this.txtStartTheta = new System.Windows.Forms.TextBox();
             this.btn_flytraj = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
-            this.pictureBoxIMUGPS = new System.Windows.Forms.PictureBox();
-            this.realJaguar = new AxDRROBOTSentinelCONTROLLib.AxDDrRobotSentinel();
             this.label15 = new System.Windows.Forms.Label();
             this.label17 = new System.Windows.Forms.Label();
             this.label19 = new System.Windows.Forms.Label();
             this.label20 = new System.Windows.Forms.Label();
             this.groupBoxGPSIMU.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.realJaguar)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxIMUGPS)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxGyroZ)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxGyroY)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxGyroX)).BeginInit();
@@ -127,8 +129,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.trackBarForwardPower)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxStuckDetect)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxIMUGPS)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.realJaguar)).BeginInit();
             this.SuspendLayout();
             // 
             // groupBoxGPSIMU
@@ -172,6 +172,27 @@
             this.lblBatVol.TabIndex = 43;
             this.lblBatVol.Text = "0";
             this.lblBatVol.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // realJaguar
+            // 
+            this.realJaguar.Enabled = true;
+            this.realJaguar.Location = new System.Drawing.Point(173, 21);
+            this.realJaguar.Name = "realJaguar";
+            this.realJaguar.OcxState = ((System.Windows.Forms.AxHost.State)(resources.GetObject("realJaguar.OcxState")));
+            this.realJaguar.Size = new System.Drawing.Size(18, 30);
+            this.realJaguar.TabIndex = 85;
+            this.realJaguar.Visible = false;
+            this.realJaguar.StandardSensorEvent += new System.EventHandler(this.realJaguar_StandardSensorEvent);
+            this.realJaguar.MotorSensorEvent += new System.EventHandler(this.realJaguar_MotorSensorEvent);
+            this.realJaguar.CustomSensorEvent += new System.EventHandler(this.realJaguar_CustomSensorEvent);
+            // 
+            // pictureBoxIMUGPS
+            // 
+            this.pictureBoxIMUGPS.Location = new System.Drawing.Point(211, 21);
+            this.pictureBoxIMUGPS.Name = "pictureBoxIMUGPS";
+            this.pictureBoxIMUGPS.Size = new System.Drawing.Size(38, 32);
+            this.pictureBoxIMUGPS.TabIndex = 86;
+            this.pictureBoxIMUGPS.TabStop = false;
             // 
             // label2
             // 
@@ -961,27 +982,6 @@
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
-            // pictureBoxIMUGPS
-            // 
-            this.pictureBoxIMUGPS.Location = new System.Drawing.Point(211, 21);
-            this.pictureBoxIMUGPS.Name = "pictureBoxIMUGPS";
-            this.pictureBoxIMUGPS.Size = new System.Drawing.Size(38, 32);
-            this.pictureBoxIMUGPS.TabIndex = 86;
-            this.pictureBoxIMUGPS.TabStop = false;
-            // 
-            // realJaguar
-            // 
-            this.realJaguar.Enabled = true;
-            this.realJaguar.Location = new System.Drawing.Point(173, 21);
-            this.realJaguar.Name = "realJaguar";
-            this.realJaguar.OcxState = ((System.Windows.Forms.AxHost.State)(resources.GetObject("realJaguar.OcxState")));
-            this.realJaguar.Size = new System.Drawing.Size(18, 30);
-            this.realJaguar.TabIndex = 85;
-            this.realJaguar.Visible = false;
-            this.realJaguar.StandardSensorEvent += new System.EventHandler(this.realJaguar_StandardSensorEvent);
-            this.realJaguar.MotorSensorEvent += new System.EventHandler(this.realJaguar_MotorSensorEvent);
-            this.realJaguar.CustomSensorEvent += new System.EventHandler(this.realJaguar_CustomSensorEvent);
-            // 
             // label15
             // 
             this.label15.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -1096,6 +1096,8 @@
             this.Shown += new System.EventHandler(this.JaguarCtrl_Shown);
             this.groupBoxGPSIMU.ResumeLayout(false);
             this.groupBoxGPSIMU.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.realJaguar)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxIMUGPS)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxGyroZ)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxGyroY)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxGyroX)).EndInit();
@@ -1111,8 +1113,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.trackBarForwardPower)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxStuckDetect)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxIMUGPS)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.realJaguar)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 

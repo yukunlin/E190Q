@@ -13,6 +13,11 @@ namespace DrRobot.JaguarControl
     public class Navigation
     {
         #region Navigation Variables
+        public double _goalX, _goalY;
+        public int numWPs;
+        public double[,] _waypoints;
+        public int _currentWP;
+
         public long[] LaserData = new long[DrRobot.JaguarControl.JaguarCtrl.DISDATALEN];
         public double initialX, initialY, initialT;
         public double _x, _y, _theta;
@@ -51,10 +56,14 @@ namespace DrRobot.JaguarControl
         public double ROBOTRADIUS = 0.242;//0.232
         public double _angleTravelled, _distanceTravelled;
         private double _diffEncoderPulseL, _diffEncoderPulseR;
-        private double maxVelocity = 0.25;
-        private double Kpho = 3.0;
-        private double Kalpha = 8;//8
+        private double maxVelocity = 0.50;
+        //private double Kpho = 3.0;
+        //private double Kalpha = 8;//8
+        //private double Kbeta = -1;//-0.5//-1.0;
+        private double Kpho = 1;
+        private double Kalpha = 5;//2//8
         private double Kbeta = -1;//-0.5//-1.0;
+
         double time = 0;
         DateTime startTime;
 
@@ -174,6 +183,24 @@ namespace DrRobot.JaguarControl
             map = new Map();
             pf = new ParticleFilter(numParticles, this, map);
 
+            _currentWP = 1;
+            numWPs = 5;
+            _waypoints = new double[numWPs, 2];
+            _waypoints[0, 0] = -3;
+            _waypoints[0, 1] = -8;
+
+            _waypoints[1, 0] = -1;
+            _waypoints[1, 1] = -8;
+
+            _waypoints[2, 0] = 2;
+            _waypoints[2, 1] = -18;
+
+            _waypoints[3, 0] = 2;
+            _waypoints[3, 1] = -23;
+
+            _waypoints[4, 0] = 3;
+            _waypoints[4, 1] = -27;
+
             this.Initialize();
 
             _movingAvgValuesL = new LinkedList<double>();
@@ -200,8 +227,8 @@ namespace DrRobot.JaguarControl
         public void Initialize()
         {
             // Initialize state estimates
-            _x = 0;//initialX;
-            _y = 0;//initialY;
+            _x = -3;//initialX;
+            _y = -8;//initialY;
             _theta = 0;//initialT;
 
             // Initialize accumulation
@@ -209,8 +236,8 @@ namespace DrRobot.JaguarControl
             _accumR = 0;
 
             // Initialize state estimates
-            x_est = 0;//initialX;
-            y_est = 0;//initialY;
+            x_est = -3;//initialX;
+            y_est = -8;//initialY;
             t_est = 0;//initialT;
 
             // Set desired state
@@ -581,7 +608,7 @@ namespace DrRobot.JaguarControl
 
             const double DEADBAND = 8000;
 
-            if (Math.Sign(_desiredRotRateR) == Math.Sign(_desiredRotRateRPrev))
+            if (Math.Sign(_desiredRotRateL) == Math.Sign(_desiredRotRateLPrev))
             {
                 _accumL += u_L;
             }
@@ -590,7 +617,7 @@ namespace DrRobot.JaguarControl
                 _accumL = 0;
             }
 
-            if (Math.Sign(_desiredRotRateRPrev) == Math.Sign(_desiredRotRateLPrev))
+            if (Math.Sign(_desiredRotRateR) == Math.Sign(_desiredRotRateRPrev))
             {
                 _accumR += u_R;
             }
@@ -745,12 +772,131 @@ namespace DrRobot.JaguarControl
             // ****************** Additional Student Code: End   ************                
         }
 
+        private double constrainAngle(double angle)
+        {
+            angle = (angle > Math.PI) ? angle % (2 * Math.PI) - 2 * Math.PI : angle;
+            angle = (angle < -Math.PI) ? angle % (2 * Math.PI) + 2 * Math.PI : angle;
+            return angle;
+        }
 
+        private void PointTrack(double goalX, double goalY, double goalT)
+        {
+            // Put code here to calculate motorSignalR and 
+            // motorSignalL. Make sure the robot does not exceed 
+            // maxVelocity!!!!!!!!!!!!
+            _goalX = goalX;
+            _goalY = goalY;
+
+            double dx = goalX - x_est;
+            double dy = goalY - y_est;
+            double dt = goalT - t_est;
+
+            // Make decision whether to go forwards or backwards
+            bool forwardCondition = (dx * Math.Cos(t_est) + dy * Math.Sin(t_est)) >= 0;
+
+            // Translate problem into coordinates in pho, alpha, and beta.
+            double pho = Math.Sqrt(dx * dx + dy * dy);
+            double alpha = -t_est + (forwardCondition ? Math.Atan2(dy, dx) : Math.Atan2(-dy, -dx));
+            if (pho < 0.05)
+                alpha = 0; //close enough, stop caring about alpha.
+            double beta = alpha - dt;
+
+            dt = constrainAngle(dt);
+            alpha = constrainAngle(alpha);
+            beta = constrainAngle(beta);
+
+            //Threshold close enough values to zero to avoid jitter
+            if (pho < 0.04)
+                pho = 0;
+            if (Math.Abs(beta) < 0.02)
+                beta = 0;
+
+            // desired forward velocity
+            double desiredV = forwardCondition ? Kpho * pho : -Kpho * pho;
+
+            double KbetaFactor = 0; //factor to which to scale Kbeta
+            // HIGH LEVEL: ignore desiredT until within 1 meter, 
+            // go against the desired direction until 0.1, then turn towards desired direction
+            // Thus KbetaFactor is 0 until pho < 1, then it decreases to -2, 
+            // and then increases back to 0 at 0.1, and 1 at 0.
+            if (pho < 1)
+            {
+                KbetaFactor = (pho - 1) / 0.7 * 2; //slope from 0 to -2 from 0.7 to 0.3
+                if (pho < 0.3) //slope from -2 to 0 from 0.3 to 0.1
+                    KbetaFactor = (0.1 - pho) / 0.2 * 2;
+                if (pho < 0.1) //slope from 0 to 1 from 0.1 to 0.0
+                    KbetaFactor = (0.1 - pho) / 0.1;
+            }
+
+            double desiredW = Kalpha * alpha + KbetaFactor * Kbeta * beta;
+
+            //if (Math.Abs(desiredW * robotRadius) > maxVelocity)
+            //    desiredW = (0.9*maxVelocity / robotRadius) * (desiredW/Math.Abs(desiredW));
+
+            double leftWheelVelocity = desiredV - desiredW * ROBOTRADIUS;
+            double rightWheelVelocity = desiredV + desiredW * ROBOTRADIUS;
+
+            //// threshold wheel velocities at maxVelocity
+            //if (Math.Abs(desiredV) > maxVelocity)
+            //    desiredV = Math.Sign(desiredV) * maxVelocity;
+
+            // threshold wheel velocities at maxVelocity
+            if (Math.Abs(leftWheelVelocity) > maxVelocity)
+            {
+                rightWheelVelocity = maxVelocity / Math.Abs(leftWheelVelocity) * rightWheelVelocity;
+                leftWheelVelocity = Math.Sign(leftWheelVelocity) * maxVelocity;
+            }
+            if (Math.Abs(rightWheelVelocity) > maxVelocity)
+            {
+                leftWheelVelocity = maxVelocity / Math.Abs(rightWheelVelocity) * leftWheelVelocity;
+                rightWheelVelocity = Math.Sign(rightWheelVelocity) * maxVelocity;
+            }
+
+            _desiredRotRateL = (short)(leftWheelVelocity / (2 * Math.PI * WHEELRADIUS) * PULSESPERROTATION);
+            _desiredRotRateR = (short)(rightWheelVelocity / (2 * Math.PI * WHEELRADIUS) * PULSESPERROTATION);
+        }
+
+        private bool LineTrack(double m, double xend, double yend, double x_est, double y_est)
+        {
+            double a = (x_est + m * y_est - xend - m * yend) / (1 + m * m);
+            double b = m * a;
+            double d = 0.5;
+            double tgoal = Math.Atan2(-b, -a);
+
+            double xgoal = xend + a + d * Math.Cos(tgoal);
+            double ygoal = yend + b + d * Math.Sin(tgoal);
+
+            bool next = false;
+            if (Math.Pow(xend - x_est, 2) + Math.Pow(yend - y_est, 2) < d * d)
+            {
+                xgoal = xend;
+                ygoal = yend;
+                next = true;
+            }
+            PointTrack(xgoal, ygoal, tgoal);
+            return next;
+        }
+
+        private int WaypointTrack(double x_est, double y_est, int currentWP)
+        {
+            double m = (_waypoints[currentWP,1]-_waypoints[currentWP-1,1])/(_waypoints[currentWP,0]-_waypoints[currentWP-1,0]+0.001);
+            bool next = LineTrack( m, _waypoints[currentWP,0], _waypoints[currentWP,1], x_est, y_est );
+
+            if (next && currentWP < (numWPs -1))
+                ++currentWP;
+
+            return currentWP;
+        }
         // This function is called at every iteration of the control loop
         // if used, this function can drive the robot to any desired
         // robot state. It does not check for collisions
         private void FlyToSetPoint()
         {
+            //PointTrack(desiredX, desiredY, desiredT);
+            //LineTrack(1, desiredX, desiredY, _x, _y);
+            _currentWP = WaypointTrack(x_est, y_est, _currentWP);
+
+            /*
             // calculate x, y and theta to desired point
             var deltaX = desiredX - x_est;
             var deltaY = desiredY - y_est;
@@ -774,7 +920,7 @@ namespace DrRobot.JaguarControl
                 _desiredRotRateL = 0;
             if (Math.Abs(_desiredRotRateR) < threshold)
                 _desiredRotRateR = 0;
-
+            */
         }
 
         public static double squareSumPoints(double x1, double y1, double x2, double y2)

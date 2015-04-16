@@ -26,14 +26,14 @@ namespace DrRobot.JaguarControl
         {
 
             // count number of lines in CSV file
-            numMapSegments = File.ReadAllLines(@"C:\Users\Olivier\Desktop\extended_map.csv").Length;
+            numMapSegments = File.ReadAllLines(@"C:\Users\gkhadge\Downloads\extended_map2.csv").Length;
             mapSegmentCorners = new double[numMapSegments,2,2];
             segmentSizes = new double[numMapSegments];
             slopes = new double[numMapSegments];
             intercepts = new double[numMapSegments];
 
             // open CSV file
-            var reader = new StreamReader(File.OpenRead(@"C:\Users\Olivier\Desktop\extended_map.csv"));
+            var reader = new StreamReader(File.OpenRead(@"C:\Users\gkhadge\Downloads\extended_map2.csv"));
             int r = 0;
 
             // read line by line
@@ -84,10 +84,14 @@ namespace DrRobot.JaguarControl
         // SENSOR ORIENTATION (t)
         double GetWallDistance(double x, double y, double t, int segment){
             // get wall points
+            //return MAXLASERDISTANCE;
             double wallX1 = mapSegmentCorners[segment, 0, 0];
             double wallY1 = mapSegmentCorners[segment, 0, 1];
             double wallX2 = mapSegmentCorners[segment, 1, 0];
             double wallY2 = mapSegmentCorners[segment, 1, 1];
+
+            if (wallY1 < -30 || wallY1 > -6)
+                return MAXLASERDISTANCE;
 
             double wallLength = Navigation.normPoints(wallX1, wallY1, wallX2, wallY2);
             double xm = (wallX2 - wallX1)/wallLength;
