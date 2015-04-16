@@ -122,13 +122,15 @@ namespace DrRobot.JaguarControl
             //int step = 8;
             int n = 0;//LaserData.Length/(step*laserStepSize) + 1;
 
+            var segments = map.SegmentsWithinRadius(ppx, ppy, Map.MAXLASERDISTANCE + 1);
+
             //estimate1 = (1000 * map.GetClosestWallDistance(ppx, ppy, ppt - 1.57 + laserAngles[0]));
             for (int i = 0; i < navigation.LaserData.Length; i = i + SENSORSTEP)
             {
                 angle = navigation.laserAngles[i];
-                estimate1 = (1000 * map.GetClosestWallDistance(ppx, ppy, ppt - 1.57 + angle - 0.1));
-                estimate2 = (1000 * map.GetClosestWallDistance(ppx, ppy, ppt - 1.57 + angle));
-                estimate3 = (1000 * map.GetClosestWallDistance(ppx, ppy, ppt - 1.57 + angle + 0.1));
+                estimate1 = (1000 * map.GetClosestWallDistance(ppx, ppy, ppt - 1.57 + angle - 0.1, segments));
+                estimate2 = (1000 * map.GetClosestWallDistance(ppx, ppy, ppt - 1.57 + angle, segments));
+                estimate3 = (1000 * map.GetClosestWallDistance(ppx, ppy, ppt - 1.57 + angle + 0.1, segments));
 
                 measurement = navigation.LaserData[i];
                 //measurement

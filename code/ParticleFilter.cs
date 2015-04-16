@@ -120,6 +120,8 @@ namespace DrRobot.JaguarControl
                 
             }
 
+            var segments = m.SegmentsWithinRadius(particles[p].x, particles[p].y, Map.MAXLASERDISTANCE + 1);
+
             // calculate expected value based on odometry
             List<double> expectedWallDist = new List<double>();
             for (int i = 0; i < laserAngles.Count; i++)
@@ -127,7 +129,7 @@ namespace DrRobot.JaguarControl
                 double x = particles[p].x;
                 double y = particles[p].y;
                 double t = laserAngles[i]+particles[p].t;
-                expectedWallDist.Add(m.GetClosestWallDistance(x,y,t));
+                expectedWallDist.Add(m.GetClosestWallDistance(x,y,t, segments));
             }
 
             // calculated error term: expected - measured
