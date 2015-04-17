@@ -34,8 +34,10 @@ namespace DrRobot.JaguarControl
 
 
         private double SD = .3; 
-        public int SENSORSTEP = 10;
+        public int SENSORSTEP = 15;
+        public int LASERSTEPRATE = 4;
         public int laserOffset;
+
 
         public ParticleFilter(int numParticles, Navigation n, Map m)
         {
@@ -215,7 +217,7 @@ namespace DrRobot.JaguarControl
         public void Correct()
         {
 
-            laserOffset = (laserOffset + 3) % SENSORSTEP;
+            laserOffset = (laserOffset + LASERSTEPRATE) % SENSORSTEP;
 
             // calculate all particle weights
             double weightAccum = 0;

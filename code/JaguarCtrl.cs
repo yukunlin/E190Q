@@ -271,21 +271,40 @@ namespace DrRobot.JaguarControl
                 g.FillRectangle(Brushes.Black, new Rectangle(xMin, yMin, paneWidth, paneHeight));
 
                 // Add Grid
-                int numXLines = (int)(0.5 * paneWidth / (mapResolution * cellWidth)) + 1;
-                int numYLines = (int)(0.5 * paneHeight / (mapResolution * cellWidth)) + 1;
-                for (int i = 0; i < numXLines; i++)
+                //int numXLines = (int)(0.5 * paneWidth / (mapResolution * cellWidth)) + 1;
+                //int numYLines = (int)(0.5 * paneHeight / (mapResolution * cellWidth)) + 1;
+                //for (int i = 0; i < numXLines; i++)
+                //{
+                //    float Xp = (float)(xCenter + i * mapResolution * cellWidth);
+                //    float Xm = (float)(xCenter - i * mapResolution * cellWidth);
+                //    g.DrawLine(goldPen, Xp, yMinS, Xp, yMaxS);
+                //    g.DrawLine(goldPen, Xm, yMinS, Xm, yMaxS);
+                //}
+                float Xp = (float)(xCenter - (int)((xCenter - xMinS) / (mapResolution * cellWidth)) * (mapResolution * cellWidth));
+                //while (Xp > xMinS)
+                //    Xp -= (float)(mapResolution * cellWidth);
+                while (Xp < xMaxS)
                 {
-                    float Xp = (float)(xCenter + i * mapResolution * cellWidth);
-                    float Xm = (float)(xCenter - i * mapResolution * cellWidth);
+                    //if (Xp > xMinS)
                     g.DrawLine(goldPen, Xp, yMinS, Xp, yMaxS);
-                    g.DrawLine(goldPen, Xm, yMinS, Xm, yMaxS);
+                    Xp += (float)(mapResolution * cellWidth);
                 }
-                for (int i = 0; i < numYLines; i++)
+                //for (int i = 0; i < 2*numYLines; i++)
+                //{
+                //    float Yp = (float)(yCenter + (i+15) * mapResolution * cellWidth);
+                //    float Ym = (float)(yCenter - (i-15) * mapResolution * cellWidth);
+                //    g.DrawLine(goldPen, xMinS, Yp, xMaxS, Yp);
+                //    g.DrawLine(goldPen, xMinS, Ym, xMaxS, Ym);
+                //}
+                float Yp = (float)(yCenter - (int)((yCenter - yMinS) / (mapResolution * cellWidth)) * (mapResolution * cellWidth));
+                    //(float)(yCenter);
+                //while (Yp > yMinS)
+                //    Yp -= (float)(mapResolution * cellWidth);
+                while (Yp < yMaxS)
                 {
-                    float Yp = (float)(yCenter + i * mapResolution * cellWidth);
-                    float Ym = (float)(yCenter - i * mapResolution * cellWidth);
+                    //if (Yp > yMinS)
                     g.DrawLine(goldPen, xMinS, Yp, xMaxS, Yp);
-                    g.DrawLine(goldPen, xMinS, Ym, xMaxS, Ym);
+                    Yp += (float) (mapResolution * cellWidth);
                 }
 
                 // Draw walls

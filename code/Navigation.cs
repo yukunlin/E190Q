@@ -167,11 +167,11 @@ namespace DrRobot.JaguarControl
             _waypoints[3, 0] = 2;
             _waypoints[3, 1] = -23;
 
-            _waypoints[4, 0] = 3;
+            _waypoints[4, 0] = 4;
             _waypoints[4, 1] = -26;
 
             _waypoints[5, 0] = 0;
-            _waypoints[5, 1] = -29;
+            _waypoints[5, 1] = -28;
 
             _waypoints[6, 0] = 0;
             _waypoints[6, 1] = -31;
