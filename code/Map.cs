@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 
@@ -22,18 +23,19 @@ namespace DrRobot.JaguarControl
         private double minWorkspaceY = -10;
         private double maxWorkspaceY =  10;
 
+        private Dictionary<Point, HashSet<int>> _gridToSegments; 
+
         public Map()
         {
-
             // count number of lines in CSV file
-            numMapSegments = File.ReadAllLines(@"C:\Users\gkhadge\Downloads\extended_map2.csv").Length;
+            numMapSegments = File.ReadAllLines(@"C:\Users\CAPCOM\Desktop\extended_map2.csv").Length;
             mapSegmentCorners = new double[numMapSegments,2,2];
             segmentSizes = new double[numMapSegments];
             slopes = new double[numMapSegments];
             intercepts = new double[numMapSegments];
 
             // open CSV file
-            var reader = new StreamReader(File.OpenRead(@"C:\Users\gkhadge\Downloads\extended_map2.csv"));
+            var reader = new StreamReader(File.OpenRead(@"C:\Users\CAPCOM\Desktop\extended_map2.csv"));
             int r = 0;
 
             // read line by line
@@ -48,10 +50,6 @@ namespace DrRobot.JaguarControl
                 r++;
             }
             reader.Close();
-
-             
-            // ****************** Additional Student Code: End   ************
-
 
 	        // Set map parameters
 	        // These will be useful in your future coding.
@@ -75,8 +73,127 @@ namespace DrRobot.JaguarControl
 		        // Set wall segment lengths
 		        segmentSizes[i] = Math.Sqrt(Math.Pow(mapSegmentCorners[i,0,0]-mapSegmentCorners[i,1,0],2)+Math.Pow(mapSegmentCorners[i,0,1]-mapSegmentCorners[i,1,1],2));
 	        }
+
+            // Initialize dictionary mapping grid to list of line segments in grid
+            _gridToSegments = new Dictionary<Point, HashSet<int>>();
+
+            // Add segments to grid
+            for (int i = 0; i < numMapSegments; i++)
+            {
+                AddSegmentToGrid(i);
+            }
         }
 
+
+        public List<int> SegmentsWithinRadius(double x, double y, double radius)
+        {
+            var start = DiscretizePoint(x, y);
+            var roundedRadius = (int) Math.Ceiling(radius);
+            var segmentsInRadius = new HashSet<int>();
+
+            var checkedGrid = new HashSet<Point>();
+            var queue = new Queue<Point>();
+
+            queue.Enqueue(start);
+            checkedGrid.Add(start);
+
+            while (queue.Count > 0)
+            {
+                // dequeue and add to hashset
+                var cur = queue.Dequeue();
+
+                // get line segments
+                var lineSegments = GetSegmentsInGrid(cur);
+                segmentsInRadius.UnionWith(lineSegments);
+
+                for (int i = -1; i <= 1; i++)
+                {
+                    for (int j = -1; j <= 1; j++)
+                    {
+                        var n = new Point(cur.X + i, cur.Y + j);
+                        var dist = Navigation.normPoints(start.X, start.Y, n.X, n.Y);
+
+                        // add to queue only if not checked yet and within radius
+                        if (!checkedGrid.Contains(n) && dist < roundedRadius)
+                        {
+                            checkedGrid.Add(n);
+                            queue.Enqueue(n);
+                        }
+                    }
+                }
+            }
+
+            return segmentsInRadius.ToList();
+        }
+
+
+        private HashSet<int> GetSegmentsInGrid(Point gridPoint)
+        {
+            if (_gridToSegments.ContainsKey(gridPoint))
+            {
+                return _gridToSegments[gridPoint];
+            }
+            
+            return new HashSet<int>();
+        }
+
+
+        private void AddSegmentToGrid(int segementId)
+        {
+            var x1 = mapSegmentCorners[segementId, 0, 0];
+            var y1 = mapSegmentCorners[segementId, 0, 1];
+            var x2 = mapSegmentCorners[segementId, 1, 0];
+            var y2 = mapSegmentCorners[segementId, 1, 1];
+
+            var segmentLength = Navigation.normPoints(x1, y1, x2, y2);
+            
+            // direction vector from (x1, y1) to (x2, y2)
+            var dx = (x2 - x1)/segmentLength;
+            var dy = (y2 - y1)/segmentLength;
+
+            // parametic equation argument
+            double t = 0;
+            var currentX = x1;
+            var currentY = y1;
+
+            // Add start point
+            AddToDictionary(DiscretizePoint(currentX, currentY), segementId);
+
+            while (t < segmentLength)
+            {
+                // move forward 1 unit towards (x2, y2)
+                t++;
+                currentX += dx;
+                currentY += dy;
+
+                AddToDictionary(DiscretizePoint(currentX, currentY), segementId);
+            } 
+
+            // Add end point
+            AddToDictionary(DiscretizePoint(x2, y2), segementId);
+        }
+
+
+        private Point DiscretizePoint(double x, double y)
+        {
+            return new Point((int)Math.Round(x), (int)Math.Round(y));
+        }
+
+
+        private void AddToDictionary(Point key, int segmentId)
+        {
+            if (_gridToSegments.ContainsKey(key))
+            {
+                var hashSet = _gridToSegments[key];
+                hashSet.Add(segmentId);
+            }
+            else
+            {
+                var hashSet = new HashSet<int>();
+                hashSet.Add(segmentId);
+                _gridToSegments.Add(key, hashSet);
+            }
+        }
 
 
         // This function is used in your particle filter localization lab. Find 
@@ -90,9 +207,6 @@ namespace DrRobot.JaguarControl
             double wallX2 = mapSegmentCorners[segment, 1, 0];
             double wallY2 = mapSegmentCorners[segment, 1, 1];
 
-            if (wallY1 < -30 || wallY1 > -6)
-                return MAXLASERDISTANCE;
-
             double wallLength = Navigation.normPoints(wallX1, wallY1, wallX2, wallY2);
             double xm = (wallX2 - wallX1)/wallLength;
             double ym = (wallY2 - wallY1)/wallLength;
@@ -101,18 +215,18 @@ namespace DrRobot.JaguarControl
             double wallD = ym*Math.Cos(t) - xm*Math.Sin(t);
 
             if (laserD == 0 || wallD == 0)
-                return MAXLASERDISTANCE;
+                return Math.Pow(MAXLASERDISTANCE, 2);
 
             double tlaser = (xm*y - x*ym + wallX1*ym - xm*wallY1)/ laserD;
             double twall = ((y-wallY1)*Math.Cos(t) + (-x+wallX1)* Math.Sin(t)) / wallD;
 
             // intersection in wrong direction
             if (tlaser < 0)
-                return MAXLASERDISTANCE;
+                return Math.Pow(MAXLASERDISTANCE, 2);
 
             // intersection not on wall segment
             if (twall < 0 || twall > wallLength)
-                return MAXLASERDISTANCE;
+                return Math.Pow(MAXLASERDISTANCE, 2);
 
             // intersection points
             double xInt = x + Math.Cos(t)*tlaser;
@@ -126,24 +240,18 @@ namespace DrRobot.JaguarControl
         // range to the closest wall segment, for a robot located
         // at position x, y with sensor with orientation t.
 
-        public double GetClosestWallDistance(double x, double y, double t){
+        public double GetClosestWallDistance(double x, double y, double t, List<int> segments) {
 
-	        // ****************** Additional Student Code: Start ************
-
-	        // Put code here that loops through segments, calling the
-	        // function GetWallDistance.
-            double minDist = MAXLASERDISTANCE;
+            double minDist = Math.Pow(MAXLASERDISTANCE,2);
             int minInd = 0;
 
-            for (int i = 0; i < numMapSegments; i++)
+            foreach (var i in segments)
             {
                 double wallDist = GetWallDistance(x, y, t, i);
                 minDist = Math.Min(minDist, wallDist);
                 if (wallDist == minDist)
                     minInd = i;
             }
-
-
 
             double wallX1 = mapSegmentCorners[minInd, 0, 0];
             double wallY1 = mapSegmentCorners[minInd, 0, 1];
@@ -155,7 +263,6 @@ namespace DrRobot.JaguarControl
         }
 
        
-
 
         // This function is called from the motion planner. It is
         // used to check for collisions between an edge between

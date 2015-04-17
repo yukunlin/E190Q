@@ -104,11 +104,10 @@ namespace DrRobot.JaguarControl
             long[] laserData = n.LaserData;
             List<double> laserAbridged = new List<double>();
             List<double> laserAngles = new List<double>();
-            double startAng = DrRobot.JaguarControl.JaguarCtrl.startAng;
             
 
             // abridged laser scan data
-            for (int i = laserOffset; i < laserData.Length - laserOffset; i = i + SENSORSTEP)
+            for (int i = laserOffset; i < laserData.Length; i = i + SENSORSTEP)
             {
                 var distance = laserData[i]/1000.0;
                 if (laserData[i] < 250)
@@ -122,6 +121,9 @@ namespace DrRobot.JaguarControl
                 
             }
 
+            var segments = m.SegmentsWithinRadius(particles[p].x, particles[p].y, Map.MAXLASERDISTANCE);
+            Console.WriteLine("segment count: {0}", segments.Count);
+
             // calculate expected value based on odometry
             List<double> expectedWallDist = new List<double>();
             for (int i = 0; i < laserAngles.Count; i++)
@@ -129,7 +131,7 @@ namespace DrRobot.JaguarControl
                 double x = particles[p].x;
                 double y = particles[p].y;
                 double t = laserAngles[i]+particles[p].t;
-                expectedWallDist.Add(m.GetClosestWallDistance(x,y,t));
+                expectedWallDist.Add(m.GetClosestWallDistance(x,y,t, segments));
             }
 
             // calculated error term: expected - measured
@@ -217,7 +219,11 @@ namespace DrRobot.JaguarControl
         public void Correct()
         {
 
+<<<<<<< HEAD
             laserOffset = (laserOffset + LASERSTEPRATE) % SENSORSTEP;
+=======
+            laserOffset = (laserOffset + 1) % SENSORSTEP;
+>>>>>>> c393549ce6acc999566aa9e97cb3bcca1b6a8a7a
 
             // calculate all particle weights
             double weightAccum = 0;

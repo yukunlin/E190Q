@@ -246,9 +246,6 @@ namespace DrRobot.JaguarControl
                 loggingOn = false;
             }
 
-            // Set random start for particles
-            InitializeParticles();
-
             // Set default to no motionPlanRequired
             motionPlanRequired = false;
 
@@ -422,8 +419,8 @@ namespace DrRobot.JaguarControl
             {
                 // Get last encoder measurements
                 bool gotFirstEncoder = false;
-                int counter = 0;
-                while (!gotFirstEncoder && counter < 10)
+                int iCounter = 0;
+                while (!gotFirstEncoder && iCounter < 10)
                 {
                     try
                     {
@@ -439,7 +436,7 @@ namespace DrRobot.JaguarControl
 
                     }
                     catch (Exception e) { }
-                    counter++;
+                    iCounter++;
                     Thread.Sleep(100);
                 }
             }
@@ -466,11 +463,12 @@ namespace DrRobot.JaguarControl
                 _currentEncoderPulseL = simulatedJaguar.GetEncoderPulse4();
                 _currentEncoderPulseR = simulatedJaguar.GetEncoderPulse5();
 
+                var segments = map.SegmentsWithinRadius(_x, _y, Map.MAXLASERDISTANCE);
+
                 // Get most recent laser scanner measurements
                 for (int i = 0; i < LaserData.Length; i++)
                 {
-                    LaserData[i] = (long)Math.Round(1000.0 * map.GetClosestWallDistance(_x, _y, _theta -1.57 + laserAngles[i]));
-                    
+                    LaserData[i] = (long)Math.Round(1000.0 * map.GetClosestWallDistance(_x, _y, _theta -1.57 + laserAngles[i], segments));
                 }
             }
             else
@@ -912,11 +910,8 @@ namespace DrRobot.JaguarControl
 
         private void rotateToPoint(double desiredV, double threshold)
         {
-            Console.WriteLine("rotate to point");
             double headingX = Math.Cos(desiredT);
             double headingY = Math.Sin(desiredT);
-            //double rotateX = headingX*Math.Cos(-t_est) - headingY*Math.Sin(-t_est);
-            //double rotateY = headingX*Math.Sin(-t_est) + headingY*Math.Cos(-t_est);
 
             double rotateX = headingX * Math.Cos(-t_est) - headingY * Math.Sin(-t_est);
             double rotateY = headingX * Math.Sin(-t_est) + headingY * Math.Cos(-t_est);
@@ -1333,34 +1328,12 @@ namespace DrRobot.JaguarControl
 
             _theta = boundAngle(_theta);
         }
-        // This function will Localize the robot, i.e. set the robot position
-        // defined by x,y,t using the last position with angleTravelled and
-        // distance travelled.
-        public void LocalizeRealWithIMU()
-        {
-            // ****************** Additional Student Code: Start ************
-
-            // Put code here to calculate x,y,t based on odemetry 
-            // (i.e. using last x, y, t as well as angleTravelled and distanceTravelled).
-            // Make sure t stays between pi and -pi
-
-
-            // ****************** Additional Student Code: End   ************
-        }
 
 
         public void LocalizeEstWithParticleFilter()
         {
-            // To start, just set the estimated to be the actual for simulations
-            // This will not be necessary when running the PF lab
-            
-
-            // ****************** Additional Student Code: Start ************
-
-            // Put code here to calculate x_est, y_est, t_est using a PF
-
             pf.Predict();
-            count++;
+            count = (count + 1) % 5;
 
             if ((Math.Abs(_diffEncoderPulseL) > 0 || Math.Abs(_diffEncoderPulseR) > 0) && count % 5 == 0)
             {
@@ -1371,78 +1344,7 @@ namespace DrRobot.JaguarControl
             x_est = estState[0];
             y_est = estState[1];
             t_est = estState[2];
-
-
-            // ****************** Additional Student Code: End   ************
-
         }
-
-        // Particle filters work by setting the weight associated with each
-        // particle, according to the difference between the real robot 
-        // range measurements and the predicted measurements associated 
-        // with the particle.
-        // This function should calculate the weight associated with particle p.
-
-        void CalculateWeight(int p)
-        {
-	        double weight = 0;
-
-	        // ****************** Additional Student Code: Start ************
-
-	        // Put code here to calculated weight. Feel free to use the
-	        // function map.GetClosestWallDistance from Map.cs.
-
-        }
-
-
-
-        // This function is used to initialize the particle states 
-        // for particle filtering. It should pick a random location in the 
-        // environment for each particle by calling SetRandomPos
-
-        void InitializeParticles() {
-            /*
-
-	        // Set particles in random locations and orientations within environment
-	        for (int i=0; i< numParticles; i++){
-
-		        // Either set the particles at known start position [0 0 0],  
-		        // or set particles at random locations.
-
-                if (jaguarControl.startMode == jaguarControl.UNKNOWN)
-    		        SetRandomPos(i);
-                else if (jaguarControl.startMode == jaguarControl.KNOWN)
-		            SetStartPos(i);
-	        }
-             */
-            
-        }
-
-
-
-        // For particle p, this function will select a valid position. It should
-        // select the position randomly, with equal likelihood of being anywhere 
-        // in the environement. Should work for rectangular environments to make 
-        // things easier.
-
-        void SetRandomPos(int p){
-
-	        // ****************** Additional Student Code: Start ************
-
-	        // Put code here to calculated the position, orientation of 
-            // particles[p]. Feel free to use the random.NextDouble() function. 
-	        // It might be helpful to use boundaries defined in the
-	        // Map.cs file (e.g. map.minX)
-	        
-
-
-
-            // ****************** Additional Student Code: End   ************
-        }
-
-
-
-
 
 
 
@@ -1467,17 +1369,6 @@ namespace DrRobot.JaguarControl
         }
 
 
-
-        // Get the sign of a number
-        double Sgn(double a)
-        {
-	        if (a>0)
-                return 1.0;
-	        else if (a<0)
-                return -1.0;
-	        else
-                return 0.0;
-        }
 
         #endregion
 
