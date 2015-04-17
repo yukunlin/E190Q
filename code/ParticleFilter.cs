@@ -22,7 +22,7 @@ namespace DrRobot.JaguarControl
         public Random rand;
         private double scaleDist = 0.2;
         private double baseDist = 0.001;
-        private double scaleAngle = 0.15;
+        private double scaleAngle = 0.05;
         private double baseAngle = 0.005;
 
         private double alphaFast = 0.4;
@@ -34,8 +34,8 @@ namespace DrRobot.JaguarControl
 
 
         private double SD = .3; 
-        public int SENSORSTEP = 15;
-        public int LASERSTEPRATE = 4;
+        public int SENSORSTEP = 10;
+        public int LASERSTEPRATE = 3;
         public int laserOffset;
 
 
@@ -57,10 +57,10 @@ namespace DrRobot.JaguarControl
                 double y = ContinuousUniform.Sample(rand, m.minY, m.maxY);
                 double t = ContinuousUniform.Sample(rand, -Math.PI, Math.PI);
                 */
-                
-                double x = ContinuousUniform.Sample(rand, -1, 1) -3;
-                double y = ContinuousUniform.Sample(rand, -1, 1) - 8;
-                double t = ContinuousUniform.Sample(rand, -Math.PI / 10, Math.PI / 10);//-1.57;
+
+                double x = ContinuousUniform.Sample(rand, -1, 1) + n.initialX;
+                double y = ContinuousUniform.Sample(rand, -1, 1) + n.initialY;
+                double t = ContinuousUniform.Sample(rand, -Math.PI / 10, Math.PI / 10) + n.initialT;// +1.57;
                 
                 particles[i] = new Particle(x, y, t);
             }
@@ -77,9 +77,9 @@ namespace DrRobot.JaguarControl
                 double t = ContinuousUniform.Sample(rand, -Math.PI, Math.PI);
                 */
 
-                double x = ContinuousUniform.Sample(rand, -1, 1) - 3;
-                double y = ContinuousUniform.Sample(rand, -1, 1) - 8;
-                double t = ContinuousUniform.Sample(rand, -Math.PI / 10, Math.PI / 10);//-1.57;
+                double x = ContinuousUniform.Sample(rand, -1, 1) + n.initialX;
+                double y = ContinuousUniform.Sample(rand, -1, 1) + n.initialY;
+                double t = ContinuousUniform.Sample(rand, -Math.PI / 10, Math.PI / 10) + n.initialT;// +1.57;
 
                 particles[i].x = x;
                 particles[i].y = y;
@@ -122,7 +122,7 @@ namespace DrRobot.JaguarControl
             }
 
             var segments = m.SegmentsWithinRadius(particles[p].x, particles[p].y, Map.MAXLASERDISTANCE);
-            Console.WriteLine("segment count: {0}", segments.Count);
+            //Console.WriteLine("segment count: {0}", segments.Count);
 
             // calculate expected value based on odometry
             List<double> expectedWallDist = new List<double>();
@@ -218,12 +218,7 @@ namespace DrRobot.JaguarControl
 
         public void Correct()
         {
-
-<<<<<<< HEAD
             laserOffset = (laserOffset + LASERSTEPRATE) % SENSORSTEP;
-=======
-            laserOffset = (laserOffset + 1) % SENSORSTEP;
->>>>>>> c393549ce6acc999566aa9e97cb3bcca1b6a8a7a
 
             // calculate all particle weights
             double weightAccum = 0;

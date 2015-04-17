@@ -21,6 +21,9 @@ namespace DrRobot.JaguarControl
         public long[] LaserData = new long[DrRobot.JaguarControl.JaguarCtrl.DISDATALEN];
         public double _x, _y, _theta;
         public double x_est, y_est, t_est;
+        public double initialX = -3.3;
+        public double initialY = -7.7;
+        public double initialT = 0;
         public double desiredX, desiredY, desiredT;
         public double desiredR;
         public double _actRotRateL, _actRotRateR;
@@ -94,7 +97,7 @@ namespace DrRobot.JaguarControl
         public Map map;
         public ParticleFilter pf;
 
-        public int numParticles = 150;
+        public int numParticles = 300;
         public Random random = new Random();
         public double[] laserAngles;
 
@@ -155,11 +158,17 @@ namespace DrRobot.JaguarControl
             _currentWP = 1;
             numWPs = 7;
             _waypoints = new double[numWPs, 2];
-            _waypoints[0, 0] = -3;
-            _waypoints[0, 1] = -8;
+            //_waypoints[0, 0] = 2;
+            //_waypoints[0, 1] = -28;
+
+            //_waypoints[1, 0] = 2;
+            //_waypoints[1, 1] = -18;
+
+            _waypoints[0, 0] = initialX;
+            _waypoints[0, 1] = initialY;
 
             _waypoints[1, 0] = -0.5;
-            _waypoints[1, 1] = -8;
+            _waypoints[1, 1] = -7.7;
 
             _waypoints[2, 0] = 2;
             _waypoints[2, 1] = -18;
@@ -168,7 +177,7 @@ namespace DrRobot.JaguarControl
             _waypoints[3, 1] = -23;
 
             _waypoints[4, 0] = 4;
-            _waypoints[4, 1] = -26;
+            _waypoints[4, 1] = -27;
 
             _waypoints[5, 0] = 0;
             _waypoints[5, 1] = -28;
@@ -205,9 +214,9 @@ namespace DrRobot.JaguarControl
         public void Initialize()
         {
             // Initialize state estimates
-            _x = -3;//initialX;
-            _y = -8;//initialY;
-            _theta = 0;//initialT;
+            _x = initialX;
+            _y = initialY;
+            _theta = initialT;
 
             // Initialize accumulation
             _accumL = 0;
@@ -752,7 +761,7 @@ namespace DrRobot.JaguarControl
             // Translate problem into coordinates in pho, alpha, and beta.
             double pho = Math.Sqrt(dx * dx + dy * dy);
             double alpha = -t_est + (forwardCondition ? Math.Atan2(dy, dx) : Math.Atan2(-dy, -dx));
-            if (pho < 0.05)
+            if (pho < 0.15)
                 alpha = 0; //close enough, stop caring about alpha.
             double beta = alpha - dt;
 
@@ -761,9 +770,9 @@ namespace DrRobot.JaguarControl
             beta = boundAngle(beta);
 
             //Threshold close enough values to zero to avoid jitter
-            if (pho < 0.04)
+            if (pho < 0.1)
                 pho = 0;
-            if (Math.Abs(beta) < 0.02)
+            if (Math.Abs(beta) < 0.05)
                 beta = 0;
 
             // desired forward velocity
@@ -1335,7 +1344,7 @@ namespace DrRobot.JaguarControl
             pf.Predict();
             count = (count + 1) % 5;
 
-            if ((Math.Abs(_diffEncoderPulseL) > 0 || Math.Abs(_diffEncoderPulseR) > 0) && count % 5 == 0)
+            if (Math.Abs(_diffEncoderPulseL) > 0 || Math.Abs(_diffEncoderPulseR) > 0)// && count % 5 == 0)
             {
                 pf.Correct();
             }
