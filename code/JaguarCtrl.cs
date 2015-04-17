@@ -318,7 +318,6 @@ namespace DrRobot.JaguarControl
                 g.DrawLine(thinWhitePen, (float)(xCenter + 0.1 * mapResolution), (float)(yCenter - 1.4 * mapResolution),
                     (float)(xCenter + 0.0 * mapResolution), (float)(yCenter - 1.5 * mapResolution));
 
-                // UPDATE WITH PF X_EST, Y_EST?????????????????????????????????????????
                 // Draw Robot
                 int xShift = (int)(mapResolution * xToUse);
                 int yShift = (int)(mapResolution * yToUse);

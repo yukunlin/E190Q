@@ -463,7 +463,7 @@ namespace DrRobot.JaguarControl
                 _currentEncoderPulseL = simulatedJaguar.GetEncoderPulse4();
                 _currentEncoderPulseR = simulatedJaguar.GetEncoderPulse5();
 
-                var segments = map.SegmentsWithinRadius(_x, _y, Map.MAXLASERDISTANCE + 1);
+                var segments = map.SegmentsWithinRadius(_x, _y, Map.MAXLASERDISTANCE);
 
                 // Get most recent laser scanner measurements
                 for (int i = 0; i < LaserData.Length; i++)
@@ -912,8 +912,6 @@ namespace DrRobot.JaguarControl
         {
             double headingX = Math.Cos(desiredT);
             double headingY = Math.Sin(desiredT);
-            //double rotateX = headingX*Math.Cos(-t_est) - headingY*Math.Sin(-t_est);
-            //double rotateY = headingX*Math.Sin(-t_est) + headingY*Math.Cos(-t_est);
 
             double rotateX = headingX * Math.Cos(-t_est) - headingY * Math.Sin(-t_est);
             double rotateY = headingX * Math.Sin(-t_est) + headingY * Math.Cos(-t_est);

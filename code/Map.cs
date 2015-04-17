@@ -88,15 +88,38 @@ namespace DrRobot.JaguarControl
         public List<int> SegmentsWithinRadius(double x, double y, double radius)
         {
             var start = DiscretizePoint(x, y);
-            var roundedRadius = (int) Math.Round(radius);
+            var roundedRadius = (int) Math.Ceiling(radius);
             var segmentsInRadius = new HashSet<int>();
 
-            for (int i = start.X - roundedRadius; i <= start.X + roundedRadius; i++)
+            var checkedGrid = new HashSet<Point>();
+            var queue = new Queue<Point>();
+
+            queue.Enqueue(start);
+            checkedGrid.Add(start);
+
+            while (queue.Count > 0)
             {
-                for (int j = start.Y - roundedRadius; j <= start.Y + roundedRadius; j++)
+                // dequeue and add to hashset
+                var cur = queue.Dequeue();
+
+                // get line segments
+                var lineSegments = GetSegmentsInGrid(cur);
+                segmentsInRadius.UnionWith(lineSegments);
+
+                for (int i = -1; i <= 1; i++)
                 {
-                    var lineSegments = GetSegmentsInGrid(new Point(i, j));
-                    segmentsInRadius.UnionWith(lineSegments);
+                    for (int j = -1; j <= 1; j++)
+                    {
+                        var n = new Point(cur.X + i, cur.Y + j);
+                        var dist = Navigation.normPoints(start.X, start.Y, n.X, n.Y);
+
+                        // add to queue only if not checked yet and within radius
+                        if (!checkedGrid.Contains(n) && dist < roundedRadius)
+                        {
+                            checkedGrid.Add(n);
+                            queue.Enqueue(n);
+                        }
+                    }
                 }
             }
 
@@ -126,7 +149,7 @@ namespace DrRobot.JaguarControl
             
             // direction vector from (x1, y1) to (x2, y2)
             var dx = (x2 - x1)/segmentLength;
-            var dy = (x2 - x1)/segmentLength;
+            var dy = (y2 - y1)/segmentLength;
 
             // parametic equation argument
             double t = 0;
@@ -140,8 +163,8 @@ namespace DrRobot.JaguarControl
             {
                 // move forward 1 unit towards (x2, y2)
                 t++;
-                currentX += t*dx;
-                currentY += t*dy;
+                currentX += dx;
+                currentY += dy;
 
                 AddToDictionary(DiscretizePoint(currentX, currentY), segementId);
             } 
@@ -192,18 +215,18 @@ namespace DrRobot.JaguarControl
             double wallD = ym*Math.Cos(t) - xm*Math.Sin(t);
 
             if (laserD == 0 || wallD == 0)
-                return MAXLASERDISTANCE;
+                return Math.Pow(MAXLASERDISTANCE, 2);
 
             double tlaser = (xm*y - x*ym + wallX1*ym - xm*wallY1)/ laserD;
             double twall = ((y-wallY1)*Math.Cos(t) + (-x+wallX1)* Math.Sin(t)) / wallD;
 
             // intersection in wrong direction
             if (tlaser < 0)
-                return MAXLASERDISTANCE;
+                return Math.Pow(MAXLASERDISTANCE, 2);
 
             // intersection not on wall segment
             if (twall < 0 || twall > wallLength)
-                return MAXLASERDISTANCE;
+                return Math.Pow(MAXLASERDISTANCE, 2);
 
             // intersection points
             double xInt = x + Math.Cos(t)*tlaser;
@@ -219,7 +242,7 @@ namespace DrRobot.JaguarControl
 
         public double GetClosestWallDistance(double x, double y, double t, List<int> segments) {
 
-            double minDist = MAXLASERDISTANCE;
+            double minDist = Math.Pow(MAXLASERDISTANCE,2);
             int minInd = 0;
 
             foreach (var i in segments)
