@@ -23,13 +23,17 @@ namespace DrRobot.JaguarControl
         public int[] weightedParticleNums;
         const int MAXWEIGHT = 30;
 
-        public int SENSORSTEP = 12;
+        //public int SENSORSTEP = 12;
         const double MAXERROR = 2000 * 2000; // 3000000
         public const double DISPERSION_RATE = 0.2;
         public int DISPERSION;
 
         public double K_wheelRandomness = 0.5;//1;//0.15;//0.25
         public double K_posRandomness = 0.1;
+
+        public int SENSORSTEP = 10;
+        public int LASERSTEPRATE = 3;
+        public int laserOffset;
 
         public struct Particle
         {
@@ -48,6 +52,8 @@ namespace DrRobot.JaguarControl
             DISPERSION = (int)(numParticles * DISPERSION_RATE);
             weightedParticleNums = new int[MAXWEIGHT * numParticles];
 
+            laserOffset = 0;
+
             double x, y, t;
             // randomly assigns particle location
             for (int i = 0; i < numParticles; i++)
@@ -57,16 +63,37 @@ namespace DrRobot.JaguarControl
                 double y = ContinuousUniform.Sample(rand, m.minY, m.maxY);
                 double t = ContinuousUniform.Sample(rand, -Math.PI, Math.PI);
                 */
-                
-                x = ContinuousUniform.Sample(rand, -1, 1) -3;
-                y = ContinuousUniform.Sample(rand, -1, 1) - 8;
-                t = ContinuousUniform.Sample(rand, -Math.PI / 10, Math.PI / 10);//-1.57;
+
+                x = ContinuousUniform.Sample(rand, -1, 1) + navigation.initialX;
+                y = ContinuousUniform.Sample(rand, -1, 1) + navigation.initialY;
+                t = ContinuousUniform.Sample(rand, -Math.PI / 10, Math.PI / 10) + navigation.initialT;//-1.57;
                 
                 particles[i] = new Particle();
                 particles[i].x = x;
                 particles[i].y = y;
                 particles[i].t = t;
 
+            }
+        }
+
+        public void ResetPF()
+        {
+            for (int i = 0; i < particles.Length; i++)
+            {
+
+                /*
+                double x = ContinuousUniform.Sample(rand, m.minX, m.maxX);
+                double y = ContinuousUniform.Sample(rand, m.minY, m.maxY);
+                double t = ContinuousUniform.Sample(rand, -Math.PI, Math.PI);
+                */
+
+                double x = ContinuousUniform.Sample(rand, -1, 1) + navigation.initialX;
+                double y = ContinuousUniform.Sample(rand, -1, 1) + navigation.initialY;
+                double t = ContinuousUniform.Sample(rand, -Math.PI / 10, Math.PI / 10) + navigation.initialT;// +1.57;
+
+                particles[i].x = x;
+                particles[i].y = y;
+                particles[i].t = t;
             }
         }
 
@@ -124,8 +151,9 @@ namespace DrRobot.JaguarControl
 
             var segments = map.SegmentsWithinRadius(ppx, ppy, Map.MAXLASERDISTANCE + 1);
 
+
             //estimate1 = (1000 * map.GetClosestWallDistance(ppx, ppy, ppt - 1.57 + laserAngles[0]));
-            for (int i = 0; i < navigation.LaserData.Length; i = i + SENSORSTEP)
+            for (int i = laserOffset; i < navigation.LaserData.Length; i = i + SENSORSTEP)
             {
                 angle = navigation.laserAngles[i];
                 estimate1 = (1000 * map.GetClosestWallDistance(ppx, ppy, ppt - 1.57 + angle - 0.1, segments));
@@ -240,6 +268,7 @@ namespace DrRobot.JaguarControl
 
         public void Correct()
         {
+            laserOffset = (laserOffset + LASERSTEPRATE) % SENSORSTEP;
             Resample();
         }
 
@@ -252,20 +281,22 @@ namespace DrRobot.JaguarControl
             double tAvgY = 0;
             double tAvg;
 
-            double weight;
+            
             for (int i = 0; i < particles.Length; ++i)
             {
-                weight = particles[i].w;
-                weight = (weight < 0) ? 0 : weight;
+                //weight = particles[i].w;
+                //weight = (weight < 0) ? 0 : weight;
  
-                xAvg += particles[i].x * weight;
-                yAvg += particles[i].y * weight;
+                xAvg += particles[i].x;
+                yAvg += particles[i].y;
                 //tAvg += par.t*par.w;
-                tAvgX += Math.Cos(particles[i].t) * weight;
-                tAvgY += Math.Sin(particles[i].t) * weight;
+                tAvgX += Math.Cos(particles[i].t);
+                tAvgY += Math.Sin(particles[i].t);
             }
 
-            tAvg = Math.Atan2(tAvgY, tAvgX);
+            tAvg = Math.Atan2(tAvgY/particles.Length, tAvgX/particles.Length);
+            xAvg /= particles.Length;
+            yAvg /= particles.Length;
 
             double[] estState = { xAvg, yAvg, tAvg };
 

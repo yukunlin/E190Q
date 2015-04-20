@@ -418,7 +418,7 @@ namespace DrRobot.JaguarControl
 
 
                     // TODO: CHECK COLORING SCHEME
-                    int blueN = (int) Math.Min(avgWeights/particle.w * 20, 255) ;
+                    int blueN = (int)255;//Math.Min(avgWeights/particle.w * 20, 255) ;
 
                     var colors = Color.FromArgb(255-blueN/2, 0, blueN);
                     var pen = new Pen(colors, 2);
