@@ -101,6 +101,7 @@ namespace DrRobot.JaguarControl
         // PF Variables
         public Map map;
         public ParticleFilter pf;
+        public Clustering cluster;
 
         public int numParticles = 300;
         public Random random = new Random();
@@ -127,6 +128,10 @@ namespace DrRobot.JaguarControl
         public Node[,] NodesInCells;
         public Node[] trajList, nodeList;
         public int trajSize, trajCurrentNode, numNodes;
+
+        // clustering
+        public double radius = 1;
+        public double[][] clusterCount;
 
         public class Node
         {
@@ -159,6 +164,7 @@ namespace DrRobot.JaguarControl
             simulatedJaguar = jc.simulatedJaguar;
             map = new Map();
             pf = new ParticleFilter(numParticles, this, map);
+            cluster = new Clustering(this);
 
             _currentWP = 1;
             numWPs = 7;
@@ -343,6 +349,8 @@ namespace DrRobot.JaguarControl
                     // Estimate the global state of the robot -x_est, y_est, t_est (lab 4)
                     LocalizeEstWithParticleFilter();
 
+                    clusterCount = cluster.FindClusters(radius);
+                    
 
                     // If using the point tracker, call the function
                     if (jaguarControl.controlMode == jaguarControl.AUTONOMOUS)
@@ -357,6 +365,8 @@ namespace DrRobot.JaguarControl
                         }
                         // Drive the robot to a desired Point (lab 3)
                         FlyToSetPoint();
+
+
 
                         // Follow the trajectory instead of a desired point (lab 3)
                         //TrackTrajectoryPRM();

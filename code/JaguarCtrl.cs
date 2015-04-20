@@ -460,6 +460,25 @@ namespace DrRobot.JaguarControl
                 g.DrawEllipse(penEst, xGoal, yGoal, (int)(2 * radEst * mapResolution), (int)(2 * radEst * mapResolution));
 
 
+                // Drawing cluster center and radius
+                var colorsClust = Color.Aqua;
+                var penClust = new Pen(colorsClust, 3);
+                var brushClust = new SolidBrush(colorsClust);
+                double radClustCenter = navigation.radius;
+
+                Console.WriteLine("length = " + navigation.clusterCount.Length);
+                for(int i = 0; i < navigation.clusterCount.Length; i++)
+                {
+                    Console.WriteLine("value = " + navigation.clusterCount[i][0]);
+                    int xClust = (int) (xCenter + (navigation.clusterCount[i][0] - radClustCenter) * mapResolution);
+                    int yClust = (int) (yCenter - (navigation.clusterCount[i][1] + radClustCenter) * mapResolution);
+                    int xClustLine = (int)(xCenter + navigation.clusterCount[i][0] * mapResolution);
+                    int yClustLine = (int)(yCenter - navigation.clusterCount[i][1] * mapResolution);
+                    int xLineClust = (int)(xCenter + (0.5 * Math.Cos(navigation.clusterCount[i][2]) + navigation.clusterCount[i][0]) * mapResolution);
+                    int yLineClust = (int)(yCenter - (0.5 * Math.Sin(navigation.clusterCount[i][2]) + navigation.clusterCount[i][1]) * mapResolution);
+                    g.DrawEllipse(penClust, xClust, yClust, (int) (2 * radClustCenter * mapResolution),(int) (2 * radClustCenter * mapResolution));
+                    g.DrawLine(penClust, xLineClust, yLineClust, xClustLine, yClustLine);
+                }  
 
                 // Draw the bitmap to the form
                 this.CreateGraphics().DrawImageUnscaled(gBuffer, 0, 0);
