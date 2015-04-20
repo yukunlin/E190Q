@@ -15,26 +15,30 @@ namespace DrRobot.JaguarControl
         double[][] partFull;
         Navigation n;
 
+        public int[] labels;
+
         public Clustering(Navigation n) {
             this.n = n;
-            clust = new double[n.numParticles][];
-            partFull = new double[n.numParticles][];
 
-            for (int i = 0; i < n.numParticles; i++)
-            {
-                clust[i] = new double[] {n.pf.particles[i].x, n.pf.particles[i].y};
-                partFull[i] = new double[] { n.pf.particles[i].x, n.pf.particles[i].y, n.pf.particles[i].t, n.pf.particles[i].w };
-            }
         }
 
 
 
         public double[][] FindClusters(double r)
         {
-            UniformKernel kernel = new UniformKernel();
-            MeanShift meanShift = new MeanShift(dimension: 2, kernel: kernel, bandwidth: r);
 
-            int[] labels = meanShift.Compute(clust);
+            clust = new double[n.numParticles][];
+            partFull = new double[n.numParticles][];
+
+            for (int i = 0; i < n.numParticles; i++)
+            {
+                clust[i] = new double[] { n.pf.particles[i].x, n.pf.particles[i].y };
+                partFull[i] = new double[] { n.pf.particles[i].x, n.pf.particles[i].y, n.pf.particles[i].t, n.pf.particles[i].w };
+            }
+            UniformKernel kernel = new UniformKernel();
+            MeanShift meanShift = new MeanShift(dimension: 2, kernel: kernel, bandwidth: 2*r);
+
+            labels = meanShift.Compute(clust);
             double[][] clustersFound = new double[labels.Max()+1][];
             Array.Sort(labels, partFull);
             
@@ -61,8 +65,8 @@ namespace DrRobot.JaguarControl
                 }
                 else
                 {
-                    
-                    clustersFound[count] = new double[] { xWeightedAvg / wSum, yWeightedAvg / wSum, tWeightedAvg / wSum, wSum };
+                    double offset = 0.000000001;
+                    clustersFound[count] = new double[] { xWeightedAvg / (wSum+offset), yWeightedAvg / (wSum+offset), tWeightedAvg / (wSum+offset), wSum };
                     count++;
                     
                         xWeightedAvg = partFull[i][0] * partFull[i][3];
@@ -76,6 +80,7 @@ namespace DrRobot.JaguarControl
 
                 
                 }
+
             return clustersFound;
         }
     }

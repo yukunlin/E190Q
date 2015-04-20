@@ -52,15 +52,15 @@ namespace DrRobot.JaguarControl
             // randomly assigns particle location
             for (int i = 0; i < numParticles; i++)
             {
-                /*
-                double x = ContinuousUniform.Sample(rand, m.minX, m.maxX);
-                double y = ContinuousUniform.Sample(rand, m.minY, m.maxY);
-                double t = ContinuousUniform.Sample(rand, -Math.PI, Math.PI);
-                */
                 
+                x = ContinuousUniform.Sample(rand, -20, 20);
+                y = ContinuousUniform.Sample(rand, -20, 20);
+                t = ContinuousUniform.Sample(rand, -Math.PI, Math.PI);
+                
+                /*
                 x = ContinuousUniform.Sample(rand, -1, 1) -3;
                 y = ContinuousUniform.Sample(rand, -1, 1) - 8;
-                t = ContinuousUniform.Sample(rand, -Math.PI / 10, Math.PI / 10);//-1.57;
+                t = ContinuousUniform.Sample(rand, -Math.PI / 10, Math.PI / 10);//-1.57;*/
                 
                 particles[i] = new Particle();
                 particles[i].x = x;
