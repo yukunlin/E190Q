@@ -154,21 +154,43 @@ namespace DrRobot.JaguarControl
             double errorTemp1 = 0, errorTemp2 = 0, errorTemp3 = 0;
             double errorTemp = 0;
 
-            double estimate1, estimate2, estimate3;
-            double measurement, angle;
+            double estimate1=0, estimate2=0, estimate3=0;
+            double measurement, angle = 0;
             //int step = 8;
             int n = 0;//LaserData.Length/(step*laserStepSize) + 1;
 
             var segments = map.SegmentsWithinRadius(ppx, ppy, Map.MAXLASERDISTANCE + 1);
 
-
+            double angleStep = navigation.laserAngles[1 + SENSORSTEP] - navigation.laserAngles[1];
             //estimate1 = (1000 * map.GetClosestWallDistance(ppx, ppy, ppt - 1.57 + laserAngles[0]));
             for (int i = laserOffset; i < navigation.LaserData.Length; i = i + SENSORSTEP)
             {
+                /* Old working code
                 angle = navigation.laserAngles[i];
                 estimate1 = (1000 * map.GetClosestWallDistance(ppx, ppy, ppt - 1.57 + angle - 0.1, segments));
                 estimate2 = (1000 * map.GetClosestWallDistance(ppx, ppy, ppt - 1.57 + angle, segments));
-                estimate3 = (1000 * map.GetClosestWallDistance(ppx, ppy, ppt - 1.57 + angle + 0.1, segments));
+                estimate3 = (1000 * map.GetClosestWallDistance(ppx, ppy, ppt - 1.57 + angle + 0.1, segments));*/
+
+                //Experiment to reduce getClosestWallDistance calls
+                //if (i + SENSORSTEP < navigation.LaserData.Length)
+                //    angle = navigation.laserAngles[i + SENSORSTEP];
+                //else
+                //    angle += angleStep;
+
+                if (n == 0)
+                {
+                    angle = navigation.laserAngles[i + SENSORSTEP];
+                    estimate1 = (1000 * map.GetClosestWallDistance(ppx, ppy, ppt - 1.57 + angle - 2 * angleStep, segments));
+                    estimate2 = (1000 * map.GetClosestWallDistance(ppx, ppy, ppt - 1.57 + angle - angleStep, segments));
+                }
+                else
+                {
+                    angle += angleStep;
+                    estimate1 = estimate2;
+                    estimate2 = estimate3;
+                }
+                estimate3 = (1000 * map.GetClosestWallDistance(ppx, ppy, ppt - 1.57 + angle, segments));
+                
 
                 measurement = navigation.LaserData[i];
                 //measurement
@@ -181,9 +203,9 @@ namespace DrRobot.JaguarControl
                     {
                         errorTemp = Math.Pow(measurement - estimate1, 2);
                         if (errorTemp > MAXERROR)
-                            errorTemp1 += 1.1 * MAXERROR;
+                            errorTemp1 += MAXERROR;
                         else
-                            errorTemp1 += 1.1 * errorTemp;
+                            errorTemp1 += errorTemp;
                     }
                     if (estimate2 < 2000)
                     {
@@ -197,18 +219,18 @@ namespace DrRobot.JaguarControl
                     {
                         errorTemp = Math.Pow(measurement - estimate3, 2);
                         if (errorTemp > MAXERROR)
-                            errorTemp3 += 1.1 * MAXERROR;
+                            errorTemp3 += MAXERROR;
                         else
-                            errorTemp3 += 1.1 * errorTemp;
+                            errorTemp3 += errorTemp;
                     }
                 }
                 else //else, it's a normal measurement..
                 {
                     errorTemp = Math.Pow(measurement - estimate1, 2);
                     if (errorTemp > MAXERROR)
-                        errorTemp1 += 1.1 * MAXERROR;
+                        errorTemp1 += MAXERROR;
                     else
-                        errorTemp1 += 1.1 * errorTemp;
+                        errorTemp1 += errorTemp;
                     errorTemp = Math.Pow(measurement - estimate2, 2);
                     if (errorTemp > MAXERROR)
                         errorTemp2 += MAXERROR;
@@ -216,13 +238,16 @@ namespace DrRobot.JaguarControl
                         errorTemp2 += errorTemp;
                     errorTemp = Math.Pow(measurement - estimate3, 2);
                     if (errorTemp > MAXERROR)
-                        errorTemp3 += 1.1 * MAXERROR;
+                        errorTemp3 += MAXERROR;
                     else
-                        errorTemp3 += 1.1 * errorTemp;
+                        errorTemp3 += errorTemp;
                 }
                 ++n;
 
             }
+
+            errorTemp1 *= 1.1;
+            errorTemp3 *= 1.1;
             //error = Math.Min(errorTemp1, errorTemp2);
             //error = Math.Min(error, errorTemp3);
             error = (errorTemp1 < errorTemp2) ? ((errorTemp1 < errorTemp3) ? errorTemp1 : errorTemp3) : ((errorTemp2 < errorTemp3) ? errorTemp2 : errorTemp3);
@@ -267,7 +292,7 @@ namespace DrRobot.JaguarControl
 
                     x = ContinuousUniform.Sample(rand, -1, 1) + particles[i].x;
                     y = ContinuousUniform.Sample(rand, -1, 1) + particles[i].y;
-                    t = ContinuousUniform.Sample(rand, -Math.PI / 10, Math.PI / 10);//-1.57;
+                    t = ContinuousUniform.Sample(rand, -Math.PI / 3, Math.PI / 3);//-1.57;
 
                     particles[i].x = x;
                     particles[i].y = y;

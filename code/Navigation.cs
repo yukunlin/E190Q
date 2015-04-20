@@ -21,9 +21,9 @@ namespace DrRobot.JaguarControl
         public long[] LaserData = new long[DrRobot.JaguarControl.JaguarCtrl.DISDATALEN];
         public double _x, _y, _theta;
         public double x_est, y_est, t_est;
-        public double initialX = -3.3;
-        public double initialY = -7.7;
-        public double initialT = 0;
+        public double initialX = 3.3;//-3.3;
+        public double initialY = -0.3;//-7.7;
+        public double initialT = 3.14;//0;
         public double desiredX, desiredY, desiredT;
         public double desiredR;
         public double _actRotRateL, _actRotRateR;
@@ -167,6 +167,29 @@ namespace DrRobot.JaguarControl
             cluster = new Clustering(this);
 
             _currentWP = 1;
+
+            // count number of lines in CSV file
+            numWPs = File.ReadAllLines(@"C:\Users\gkhadge\Documents\E190Q\code\waypoints.csv").Length + 1;
+            _waypoints = new double[numWPs, 2];
+            
+            _waypoints[0, 0] = initialX;
+            _waypoints[0, 1] = initialY;
+
+            // open CSV file
+            var reader = new StreamReader(File.OpenRead(@"C:\Users\gkhadge\Documents\E190Q\code\waypoints.csv"));
+            int r = 1;
+
+            // read line by line
+            while (!reader.EndOfStream)
+            {
+                var line = reader.ReadLine();
+                var values = line.Split(',');
+                _waypoints[r, 0] = Convert.ToDouble(values[0]);
+                _waypoints[r, 1] = Convert.ToDouble(values[1]);
+                r++;
+            }
+            reader.Close();
+            /*
             numWPs = 7;
             _waypoints = new double[numWPs, 2];
             //_waypoints[0, 0] = initialX;
@@ -195,7 +218,7 @@ namespace DrRobot.JaguarControl
 
             _waypoints[6, 0] = 0;
             _waypoints[6, 1] = -31;
-
+            */
 
             this.Initialize();
 

@@ -53,17 +53,18 @@ namespace DrRobot.JaguarControl
             {
 
                 
-                double x = ContinuousUniform.Sample(rand, m.minX, m.maxX);
-                double y = ContinuousUniform.Sample(rand, m.minY, m.maxY);
-                double t = ContinuousUniform.Sample(rand, -Math.PI, Math.PI);
+                //double x = ContinuousUniform.Sample(rand, m.minX, m.maxX);
+                //double y = ContinuousUniform.Sample(rand, m.minY, m.maxY);
+                //double t = ContinuousUniform.Sample(rand, -Math.PI, Math.PI);
+                
                 /*double x = ContinuousUniform.Sample(rand, -20, 20);
                 double y = ContinuousUniform.Sample(rand, -20, 20);
                 double t = ContinuousUniform.Sample(rand, -Math.PI, Math.PI);*/
                 
-                /*
+                
                 double x = ContinuousUniform.Sample(rand, -1, 1) + n.initialX;
                 double y = ContinuousUniform.Sample(rand, -1, 1) + n.initialY;
-                double t = ContinuousUniform.Sample(rand, -Math.PI / 10, Math.PI / 10) + n.initialT;// +1.57;*/
+                double t = ContinuousUniform.Sample(rand, -Math.PI / 10, Math.PI / 10) + n.initialT;// +1.57;
                 
                 particles[i] = new Particle(x, y, t);
             }
@@ -75,14 +76,14 @@ namespace DrRobot.JaguarControl
             {
 
                 
-                double x = ContinuousUniform.Sample(rand, m.minX, m.maxX);
-                double y = ContinuousUniform.Sample(rand, m.minY, m.maxY);
-                double t = ContinuousUniform.Sample(rand, -Math.PI, Math.PI);
+                //double x = ContinuousUniform.Sample(rand, m.minX, m.maxX);
+                //double y = ContinuousUniform.Sample(rand, m.minY, m.maxY);
+                //double t = ContinuousUniform.Sample(rand, -Math.PI, Math.PI);
                 
-                /*
+                
                 double x = ContinuousUniform.Sample(rand, -1, 1) + n.initialX;
                 double y = ContinuousUniform.Sample(rand, -1, 1) + n.initialY;
-                double t = ContinuousUniform.Sample(rand, -Math.PI / 10, Math.PI / 10) + n.initialT;// +1.57;*/
+                double t = ContinuousUniform.Sample(rand, -Math.PI / 10, Math.PI / 10) + n.initialT;// +1.57;
 
                 particles[i].x = x;
                 particles[i].y = y;
@@ -178,8 +179,8 @@ namespace DrRobot.JaguarControl
                 }
                 double dice = ContinuousUniform.Sample(rand, 0, 1);
 
-                if (dice <= randProba) //TODO: ENABLE AMCL
-                //if (false)
+                //if (dice <= randProba) //TODO: ENABLE AMCL
+                if (false)
                 {
                     double radSd = 10;
                     double thetaSd = 0.707;
