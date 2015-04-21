@@ -205,3 +205,4 @@ FakesAssemblies/
 *.csv
 
 !lab*/figures/*.pdf
+!code/extended_map.csv

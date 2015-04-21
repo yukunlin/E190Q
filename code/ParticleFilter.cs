@@ -108,7 +108,7 @@ namespace DrRobot.JaguarControl
             }
         }
 
-        private void WeighParticle(int p)
+        private void WeighParticle(int p, HashSet<int> blackSet)
         {
             long[] laserData = n.LaserData;
             List<double> laserAbridged = new List<double>();
@@ -151,13 +151,16 @@ namespace DrRobot.JaguarControl
             double weightPar;
             for (int i = 0; i < laserAngles.Count; i++)
             {
-                error = expectedWallDist[i] - laserAbridged[i];
+                if (!blackSet.Contains(i))
+                {
+                    error = expectedWallDist[i] - laserAbridged[i];
 
-                var wPar = NewtonCotesTrapeziumRule.IntegrateTwoPoint(dist.Density, error - intThres, error + intThres);
+                    var wPar = NewtonCotesTrapeziumRule.IntegrateTwoPoint(dist.Density, error - intThres, error + intThres);
 
-                weightPar = wPar + minWeight;
+                    weightPar = wPar + minWeight;
 
-                productWeight = productWeight * weightPar;
+                    productWeight = productWeight * weightPar;
+                }
             }
             particles[p].w = productWeight;
 
@@ -225,7 +228,7 @@ namespace DrRobot.JaguarControl
         }
 
 
-        public void Correct()
+        public void Correct(HashSet<int> blackSet )
         {
             laserOffset = (laserOffset + LASERSTEPRATE) % SENSORSTEP;
 
@@ -233,7 +236,7 @@ namespace DrRobot.JaguarControl
             double weightAccum = 0;
             for (int i = 0; i < particles.Length; i++)
             {
-                WeighParticle(i);
+                WeighParticle(i, blackSet);
                 weightAccum += particles[i].w;
             }
             double wAvg = weightAccum/particles.Length;
