@@ -17,14 +17,14 @@ namespace DrRobot.JaguarControl
         public int numWPs;
         public double[,] _waypoints;
         public int _currentWP;
-        const int STARTWP = 0;
+        const int STARTWP = 7;
 
         public long[] LaserData = new long[DrRobot.JaguarControl.JaguarCtrl.DISDATALEN];
         public double _x, _y, _theta;
         public double x_est, y_est, t_est;
         public double initialX = 3.3;//-3.3;
         public double initialY = -0.3;//-7.7;
-        public double initialT = 3.14;//0;
+        public double initialT = -1.57;//3.14;//0;
         public double desiredX, desiredY, desiredT;
         public double desiredR;
         public double _actRotRateL, _actRotRateR;
@@ -1009,7 +1009,7 @@ namespace DrRobot.JaguarControl
             double maxRotVelocity = 0.5;
             if (Math.Abs(rightWheelVelocity - leftWheelVelocity) > maxRotVelocity)
             {
-                double scaleRatio = maxVelocity/Math.Abs(rightWheelVelocity - leftWheelVelocity);
+                double scaleRatio = maxRotVelocity/Math.Abs(rightWheelVelocity - leftWheelVelocity);
                 leftWheelVelocity = scaleRatio * leftWheelVelocity;
                 rightWheelVelocity = scaleRatio * rightWheelVelocity;
             }
