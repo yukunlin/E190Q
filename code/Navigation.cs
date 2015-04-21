@@ -17,6 +17,7 @@ namespace DrRobot.JaguarControl
         public int numWPs;
         public double[,] _waypoints;
         public int _currentWP;
+        const int STARTWP = 0;
 
         public long[] LaserData = new long[DrRobot.JaguarControl.JaguarCtrl.DISDATALEN];
         public double _x, _y, _theta;
@@ -48,10 +49,10 @@ namespace DrRobot.JaguarControl
         public bool runThread = true;
         public bool loggingOn;
         StreamWriter logFile;
-        public int deltaT = 20;
+        public int deltaT = 50;
         private static int encoderMax = 32767;
         public int PULSESPERROTATION = 190;
-        public double WHEELRADIUS = 0.098;//0.089;  //Ben Chasnov Corrections
+        public double WHEELRADIUS = 0.089;//0.089;  //Ben Chasnov Corrections
         public double ROBOTRADIUS = 0.232;//0.242;//0.232 //Ben Chasnov Corrections
         public double _angleTravelled, _distanceTravelled;
         private double _diffEncoderPulseL, _diffEncoderPulseR;
@@ -166,18 +167,18 @@ namespace DrRobot.JaguarControl
             pf = new ParticleFilter(numParticles, this, map);
             cluster = new Clustering(this);
 
-            _currentWP = 1;
+            
 
             // count number of lines in CSV file
             numWPs = File.ReadAllLines(@"C:\Users\gkhadge\Documents\E190Q\code\waypoints.csv").Length + 1;
             _waypoints = new double[numWPs, 2];
             
-            _waypoints[0, 0] = initialX;
-            _waypoints[0, 1] = initialY;
+            //_waypoints[0, 0] = initialX;
+            //_waypoints[0, 1] = initialY;
 
             // open CSV file
             var reader = new StreamReader(File.OpenRead(@"C:\Users\gkhadge\Documents\E190Q\code\waypoints.csv"));
-            int r = 1;
+            int r = 0;
 
             // read line by line
             while (!reader.EndOfStream)
@@ -189,6 +190,11 @@ namespace DrRobot.JaguarControl
                 r++;
             }
             reader.Close();
+            _currentWP = STARTWP + 1;
+            initialX = _waypoints[STARTWP, 0];
+            initialY = _waypoints[STARTWP, 1];
+            //initialT
+
             /*
             numWPs = 7;
             _waypoints = new double[numWPs, 2];
@@ -320,7 +326,7 @@ namespace DrRobot.JaguarControl
             _trajY.Clear();
             _trajT.Clear();
 
-            _currentWP = 1;
+            _currentWP = STARTWP+1;
             pf.ResetPF();
         }
         #endregion
@@ -686,7 +692,7 @@ namespace DrRobot.JaguarControl
                 if (Math.Abs(_leftMot) < 1000)
                 {
                     if (pwmtest)
-                        tempMotorSignalL = (short)(ZEROOUTPUT + Math.Sign(_leftMot) * DEADBAND + Math.Sign(_leftMot)*Math.Max(Math.Abs(3 * _leftMot), 2000));
+                        tempMotorSignalL = (short)(ZEROOUTPUT + Math.Sign(_leftMot) * DEADBAND + Math.Sign(_leftMot)*Math.Min(Math.Abs(3 * _leftMot), 2000));
                     else
                         tempMotorSignalL = ZEROOUTPUT;
                 }
@@ -698,7 +704,7 @@ namespace DrRobot.JaguarControl
                 if (Math.Abs(_rightMot) < 1000)
                 {
                     if (pwmtest)
-                        tempMotorSignalR = (short)(ZEROOUTPUT - Math.Sign(_rightMot) * DEADBAND - Math.Sign(_rightMot) * Math.Max(Math.Abs(3 * _rightMot), 2000));
+                        tempMotorSignalR = (short)(ZEROOUTPUT - Math.Sign(_rightMot) * DEADBAND - Math.Sign(_rightMot) * Math.Min(Math.Abs(3 * _rightMot), 2000));
                     else
                         tempMotorSignalR = ZEROOUTPUT;
                 }
@@ -1000,7 +1006,8 @@ namespace DrRobot.JaguarControl
                 rightWheelVelocity = Math.Sign(rightWheelVelocity) * maxVelocity;
             }
 
-            if (Math.Abs(rightWheelVelocity - leftWheelVelocity) > maxVelocity)
+            double maxRotVelocity = 0.5;
+            if (Math.Abs(rightWheelVelocity - leftWheelVelocity) > maxRotVelocity)
             {
                 double scaleRatio = maxVelocity/Math.Abs(rightWheelVelocity - leftWheelVelocity);
                 leftWheelVelocity = scaleRatio * leftWheelVelocity;
@@ -1016,11 +1023,11 @@ namespace DrRobot.JaguarControl
 
         }
 
-        private bool LineTrack(double m, double xend, double yend, double x_est, double y_est)
+        private bool LineTrack(double m, double xend, double yend, double x_est, double y_est, double velocity)
         {
             double a = (x_est + m * y_est - xend - m * yend) / (1 + m * m);
             double b = m * a;
-            double d = 1.0;
+            double d = velocity / (Kpho*maxVelocity);//1.0;
             double tgoal = Math.Atan2(-b, -a);
 
             double xgoal = xend + a + d * Math.Cos(tgoal);
@@ -1037,12 +1044,12 @@ namespace DrRobot.JaguarControl
             return next;
         }
 
-        private int WaypointTrack(double xEst, double yEst, int currentWP)
+        private int WaypointTrack(double xEst, double yEst, int currentWP, double velocity)
         {
             double m = (_waypoints[currentWP,1]-_waypoints[currentWP-1,1])/(_waypoints[currentWP,0]-_waypoints[currentWP-1,0]+0.001);
-            bool next = LineTrack( m, _waypoints[currentWP,0], _waypoints[currentWP,1], xEst, yEst );
+            bool next = LineTrack( m, _waypoints[currentWP,0], _waypoints[currentWP,1], xEst, yEst, velocity );
 
-            if (next && currentWP < (numWPs -1))
+            if (next && currentWP < (numWPs - 2))
                 ++currentWP;
 
             return currentWP;
@@ -1259,7 +1266,25 @@ namespace DrRobot.JaguarControl
             }
             */
 
-            _currentWP = WaypointTrack(x_est, y_est, _currentWP);
+            double vel = 1.0;
+            if (_currentWP == 13 || _currentWP == 14)
+            {
+                vel = 0.5;
+                maxVelocity = 1.0;
+            }
+            else
+            {
+                vel = 1.0;
+                maxVelocity = 1.0;
+            }
+            
+            if (_currentWP == 4 || _currentWP == 8 || _currentWP == 10
+                || _currentWP == 11 || _currentWP == 12)
+            {
+                vel = 1.5;
+                maxVelocity = 1.5;
+            }
+            _currentWP = WaypointTrack(x_est, y_est, _currentWP, vel);
         }
 
 
@@ -1532,11 +1557,14 @@ namespace DrRobot.JaguarControl
         public void LocalizeEstWithParticleFilter()
         {
             pf.Predict();
-            //count = (count + 1) % 5;
+            count = (count + 1) % 10;
 
-            if (Math.Abs(_diffEncoderPulseL) > 0 || Math.Abs(_diffEncoderPulseR) > 0)// && count % 5 == 0)
+            if (Math.Abs(_diffEncoderPulseL) > 0 || Math.Abs(_diffEncoderPulseR) > 0) //&& count % 5 == 0)
             {
-                pf.Correct();
+                if (!jaguarControl.Simulating() || count % 5 == 0)
+                {
+                    pf.Correct();
+                }
             }
 
             var estState = pf.EstimatedState();

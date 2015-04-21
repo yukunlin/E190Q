@@ -100,6 +100,11 @@ namespace DrRobot.JaguarControl
                 double distTravelled = n._distanceTravelled + errorDist;
                 double angTravelled = n._angleTravelled + errorAngle;
                 particles[i].Propagate(distTravelled, angTravelled);
+
+                //double errorX = Normal.Sample(rand, 0, Math.Abs(scaleDist / 2 * n._distanceTravelled));
+                //double errorY = Normal.Sample(rand, 0, Math.Abs(scaleDist / 2 * n._distanceTravelled));
+                //particles[i].x += errorX;
+                //particles[i].y += errorY;
             }
         }
 
