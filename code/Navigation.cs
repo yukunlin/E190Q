@@ -110,7 +110,7 @@ namespace DrRobot.JaguarControl
 
         public Object thisLock = new object();
 
-
+        private HashSet<int> blackList; 
         
         // Motion Planner Variables
         const int numXCells = 20;
@@ -170,15 +170,15 @@ namespace DrRobot.JaguarControl
             
 
             // count number of lines in CSV file
-            numWPs = File.ReadAllLines(@"C:\Users\gkhadge\Documents\E190Q\code\waypoints.csv").Length + 1;
+            numWPs = File.ReadAllLines(@"..\..\extended_map.csv").Length + 1;
             _waypoints = new double[numWPs, 2];
             
             //_waypoints[0, 0] = initialX;
             //_waypoints[0, 1] = initialY;
 
             // open CSV file
-            var reader = new StreamReader(File.OpenRead(@"C:\Users\gkhadge\Documents\E190Q\code\waypoints.csv"));
-            int r = 0;
+            var reader = new StreamReader(File.OpenRead(@"..\..\extended_map.csv"));
+            int r = 1;
 
             // read line by line
             while (!reader.EndOfStream)
@@ -241,6 +241,12 @@ namespace DrRobot.JaguarControl
             double wheelCircumference = WHEELRADIUS * 2 * Math.PI;
             pulsePerMeter = PULSESPERROTATION / wheelCircumference;
 
+            blackList = new HashSet<int>();
+            // Create black list
+            for (int i = 0; i < LaserData.Length / 2; i++)
+            {
+                blackList.Add(i);
+            }
 
             // Start Control Thread
             controlThread = new Thread(new ThreadStart(runControlLoop));
@@ -1561,12 +1567,17 @@ namespace DrRobot.JaguarControl
             pf.Predict();
             count = (count + 1) % 10;
 
-            if (Math.Abs(_diffEncoderPulseL) > 0 || Math.Abs(_diffEncoderPulseR) > 0) //&& count % 5 == 0)
+            var lastFewWayPoints = 5;
+
+            HashSet<int> blackSet;
+            if (_currentWP > _waypoints.Length - lastFewWayPoints)
+                blackSet = blackList;
+            else
+                blackSet = new HashSet<int>();
+
+            if (Math.Abs(_diffEncoderPulseL) > 0 || Math.Abs(_diffEncoderPulseR) > 0)// && count % 5 == 0)
             {
-                if (!jaguarControl.Simulating() || count % 5 == 0)
-                {
-                    pf.Correct();
-                }
+                pf.Correct(blackSet);
             }
 
             var estState = pf.EstimatedState();
