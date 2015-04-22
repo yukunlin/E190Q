@@ -17,7 +17,7 @@ namespace DrRobot.JaguarControl
         public int numWPs;
         public double[,] _waypoints;
         public int _currentWP;
-        const int STARTWP = 11;
+        const int STARTWP = 0;
 
         public long[] LaserData = new long[DrRobot.JaguarControl.JaguarCtrl.DISDATALEN];
         public double _x, _y, _theta;
@@ -667,7 +667,7 @@ namespace DrRobot.JaguarControl
                 if (Math.Abs(_leftMot) < 1000)
                 {
                     if (pwmtest)
-                        tempMotorSignalL = (short)(ZEROOUTPUT + Math.Sign(_leftMot) * DEADBAND + Math.Sign(_leftMot)*Math.Min(Math.Abs(3 * _leftMot), 2000));
+                        tempMotorSignalL = (short)(ZEROOUTPUT + Math.Sign(_leftMot) * DEADBAND + Math.Sign(_leftMot)*Math.Min(Math.Abs(4 * _leftMot), 2000));
                     else
                         tempMotorSignalL = ZEROOUTPUT;
                 }
@@ -679,7 +679,7 @@ namespace DrRobot.JaguarControl
                 if (Math.Abs(_rightMot) < 1000)
                 {
                     if (pwmtest)
-                        tempMotorSignalR = (short)(ZEROOUTPUT - Math.Sign(_rightMot) * DEADBAND - Math.Sign(_rightMot) * Math.Min(Math.Abs(3 * _rightMot), 2000));
+                        tempMotorSignalR = (short)(ZEROOUTPUT - Math.Sign(_rightMot) * DEADBAND - Math.Sign(_rightMot) * Math.Min(Math.Abs(4 * _rightMot), 2000));
                     else
                         tempMotorSignalR = ZEROOUTPUT;
                 }
@@ -1161,7 +1161,7 @@ namespace DrRobot.JaguarControl
             double vel = 1.0;
             if (_currentWP == 13 || _currentWP == 14)
             {
-                vel = 0.5;
+                vel = 0.7;
                 maxVelocity = 1.0;
             }
             else
@@ -1171,7 +1171,7 @@ namespace DrRobot.JaguarControl
             }
             
             if (_currentWP == 4 || _currentWP == 8 || _currentWP == 10
-                || _currentWP == 11 || _currentWP == 12)
+                || _currentWP == 11)
             {
                 vel = 1.5;
                 maxVelocity = 1.5;
