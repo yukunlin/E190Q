@@ -62,9 +62,9 @@ namespace DrRobot.JaguarControl
                 double t = ContinuousUniform.Sample(rand, -Math.PI, Math.PI);*/
                 
                 
-                double x = ContinuousUniform.Sample(rand, -10, 10) + n.initialX;
-                double y = ContinuousUniform.Sample(rand, -10, 10) + n.initialY;
-                double t = ContinuousUniform.Sample(rand, -Math.PI, Math.PI) + n.initialT;// +1.57;
+                double x = ContinuousUniform.Sample(rand, -1, 1) + n.initialX;
+                double y = ContinuousUniform.Sample(rand, -1, 1) + n.initialY;
+                double t = ContinuousUniform.Sample(rand, -Math.PI/10, Math.PI/10) + n.initialT;// +1.57;
                 
                 particles[i] = new Particle(x, y, t);
             }
@@ -81,9 +81,9 @@ namespace DrRobot.JaguarControl
                 //double t = ContinuousUniform.Sample(rand, -Math.PI, Math.PI);
                 
                 
-                double x = ContinuousUniform.Sample(rand, -5,5) + n.initialX;
-                double y = ContinuousUniform.Sample(rand, -5, 5) + n.initialY;
-                double t = ContinuousUniform.Sample(rand, -Math.PI , Math.PI) + n.initialT;// +1.57;
+                double x = ContinuousUniform.Sample(rand, -1, 1) + n.initialX;
+                double y = ContinuousUniform.Sample(rand, -1, 1) + n.initialY;
+                double t = ContinuousUniform.Sample(rand, -Math.PI/10 , Math.PI/10) + n.initialT;// +1.57;
 
                 particles[i].x = x;
                 particles[i].y = y;
