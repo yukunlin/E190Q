@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Accord.MachineLearning;
 using Accord.Statistics.Distributions.DensityKernels;
-
+using System.Diagnostics;
 
 
 namespace DrRobot.JaguarControl
@@ -39,18 +39,50 @@ namespace DrRobot.JaguarControl
             MeanShift meanShift = new MeanShift(dimension: 2, kernel: kernel, bandwidth: 2*r);
 
             labels = meanShift.Compute(clust);
-            double[][] clustersFound = new double[labels.Max()+1][];
             Array.Sort(labels, partFull);
+
+            double[] labelsClean = new double[n.numParticles];
+            var prev = 0;
+            int counter = 0;
+            for (int i = 0; i < n.numParticles; i++)
+            {
+                if (prev == labels[i])
+                {
+                    labelsClean[i] = counter;
+                }
+                else
+                {
+                    counter++;
+                    labelsClean[i] = counter;
+                    prev = labels[i];
+                }
+            }
+            
+            var setOfLabel = new HashSet<int>(labels);
+            var uniqueLabels = setOfLabel.Count;
+            double[][] clustersFound = new double[uniqueLabels][];
+
             
             int count = 0;
             double xWeightedAvg = 0; 
             double yWeightedAvg = 0;
             double tWeightedAvg = 0;
             double wSum = 0;
+            double offset = 0.000000001;
+            int track = 0;
 
+
+            var maxLabel = labelsClean[labelsClean.Length - 1];
+
+            //Console.WriteLine("unique: {0}, max:{1}", uniqueLabels, maxLabel);
+
+            Debug.Assert(maxLabel + 1 == uniqueLabels);
+
+            //Console.WriteLine(maxLabel + 1 == uniqueLabels);
+            //Console.WriteLine("unique labels: {0}", uniqueLabels);
             for (int i = 0; i < n.numParticles; i++)
             {
-                if (labels[i] == count)
+                if (labelsClean[i] == count)
                 {
                     xWeightedAvg += partFull[i][0] * partFull[i][3];
                     yWeightedAvg += partFull[i][1] * partFull[i][3];
@@ -59,28 +91,32 @@ namespace DrRobot.JaguarControl
 
                     if (i == partFull.Length - 1)
                     {
-                        clustersFound[count] = new double[] { xWeightedAvg / wSum, yWeightedAvg / wSum, tWeightedAvg / wSum, wSum };
+                        clustersFound[count] = new double[] { xWeightedAvg / (wSum + offset), yWeightedAvg / (wSum + offset), tWeightedAvg / (wSum + offset), wSum };
                     }
 
                 }
                 else
                 {
-                    double offset = 0.000000001;
+
                     clustersFound[count] = new double[] { xWeightedAvg / (wSum+offset), yWeightedAvg / (wSum+offset), tWeightedAvg / (wSum+offset), wSum };
                     count++;
+                    track++;
                     
                         xWeightedAvg = partFull[i][0] * partFull[i][3];
                         yWeightedAvg = partFull[i][1] * partFull[i][3];
                         tWeightedAvg = partFull[i][2] * partFull[i][3];
                         wSum = partFull[i][3];
-                    
 
-        
-                }
+                        if (i == partFull.Length - 1)
+                        {
+                            clustersFound[count] = new double[] { xWeightedAvg / (wSum + offset), yWeightedAvg / (wSum + offset), tWeightedAvg / (wSum + offset), wSum };
+                        }
+                   }
 
                 
                 }
 
+            Debug.Assert(clustersFound.Length > 0);
             return clustersFound;
         }
     }

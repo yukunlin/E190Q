@@ -22,8 +22,8 @@ namespace DrRobot.JaguarControl
         public long[] LaserData = new long[DrRobot.JaguarControl.JaguarCtrl.DISDATALEN];
         public double _x, _y, _theta;
         public double x_est, y_est, t_est;
-        public double initialX = 3.3;//-3.3;
-        public double initialY = -0.3;//-7.7;
+        public double initialX = 0;//3.3;//-3.3;
+        public double initialY = 0;//-0.3;//-7.7;
         public double initialT = 3.14;//0;
         public double desiredX, desiredY, desiredT;
         public double desiredR;
@@ -131,7 +131,7 @@ namespace DrRobot.JaguarControl
         public int trajSize, trajCurrentNode, numNodes;
 
         // clustering
-        public double radius = 1;
+        public double radius = .1;
         public double[][] clusterCount;
 
         public class Node
