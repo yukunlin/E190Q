@@ -17,14 +17,14 @@ namespace DrRobot.JaguarControl
         public int numWPs;
         public double[,] _waypoints;
         public int _currentWP;
-        const int STARTWP = 7;
+        const int STARTWP = 0;
 
         public long[] LaserData = new long[DrRobot.JaguarControl.JaguarCtrl.DISDATALEN];
         public double _x, _y, _theta;
         public double x_est, y_est, t_est;
         public double initialX = 3.3;//-3.3;
         public double initialY = -0.3;//-7.7;
-        public double initialT = -1.57;//3.14;//0;
+        public double initialT = 3.14;//0;
         public double desiredX, desiredY, desiredT;
         public double desiredR;
         public double _actRotRateL, _actRotRateR;
@@ -967,7 +967,7 @@ namespace DrRobot.JaguarControl
 
                 // desired forward velocity
                 desiredV = Kpho * pho;
-
+                Console.WriteLine(pho);
                 double KbetaFactor = 0; //factor to which to scale Kbeta
                 // HIGH LEVEL: ignore desiredT until within 1 meter, 
                 // go against the desired direction until 0.1, then turn towards desired direction
@@ -990,6 +990,7 @@ namespace DrRobot.JaguarControl
             double leftWheelVelocity = desiredV - desiredW * ROBOTRADIUS;
             double rightWheelVelocity = desiredV + desiredW * ROBOTRADIUS;
 
+            //Console.WriteLine(leftWheelVelocity);
             //// threshold wheel velocities at maxVelocity
             //if (Math.Abs(desiredV) > maxVelocity)
             //    desiredV = Math.Sign(desiredV) * maxVelocity;
@@ -1006,7 +1007,7 @@ namespace DrRobot.JaguarControl
                 rightWheelVelocity = Math.Sign(rightWheelVelocity) * maxVelocity;
             }
 
-            double maxRotVelocity = 0.5;
+            double maxRotVelocity = 0.6;
             if (Math.Abs(rightWheelVelocity - leftWheelVelocity) > maxRotVelocity)
             {
                 double scaleRatio = maxRotVelocity/Math.Abs(rightWheelVelocity - leftWheelVelocity);
@@ -1018,7 +1019,7 @@ namespace DrRobot.JaguarControl
 
             _desiredRotRateL = (short)(leftWheelVelocity / (2 * Math.PI * WHEELRADIUS) * PULSESPERROTATION);
             _desiredRotRateR = (short)(rightWheelVelocity / (2 * Math.PI * WHEELRADIUS) * PULSESPERROTATION);
-            //Console.WriteLine("desiredV: {0}, desiredOmega: {1} ", desiredV, desiredW);
+            Console.WriteLine("desiredV: {0}, desiredOmega: {1} ", desiredV, desiredW);
             //Console.WriteLine("desired rot L: {0}, desired rot R:, {1}\n", _desiredRotRateL, _desiredRotRateR);
 
         }
@@ -1027,7 +1028,7 @@ namespace DrRobot.JaguarControl
         {
             double a = (x_est + m * y_est - xend - m * yend) / (1 + m * m);
             double b = m * a;
-            double d = velocity / (Kpho*maxVelocity);//1.0;
+            double d = velocity / Kpho;//1.0;
             double tgoal = Math.Atan2(-b, -a);
 
             double xgoal = xend + a + d * Math.Cos(tgoal);
@@ -1285,6 +1286,7 @@ namespace DrRobot.JaguarControl
                 maxVelocity = 1.5;
             }
             _currentWP = WaypointTrack(x_est, y_est, _currentWP, vel);
+            Console.WriteLine(maxVelocity);
         }
 
 

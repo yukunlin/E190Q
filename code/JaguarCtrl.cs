@@ -466,10 +466,10 @@ namespace DrRobot.JaguarControl
                 var brushClust = new SolidBrush(colorsClust);
                 double radClustCenter = navigation.radius;
 
-                Console.WriteLine("length = " + navigation.clusterCount.Length);
+                //Console.WriteLine("length = " + navigation.clusterCount.Length);
                 for(int i = 0; i < navigation.clusterCount.Length-1; i++)
                 {
-                    Console.WriteLine("value = " + navigation.clusterCount[i][0]);
+                    //Console.WriteLine("value = " + navigation.clusterCount[i][0]);
                     int xClust = (int) (xCenter + (navigation.clusterCount[i][0] - radClustCenter) * mapResolution);
                     int yClust = (int) (yCenter - (navigation.clusterCount[i][1] + radClustCenter) * mapResolution);
                     int xClustLine = (int)(xCenter + navigation.clusterCount[i][0] * mapResolution);
