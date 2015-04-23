@@ -17,14 +17,14 @@ namespace DrRobot.JaguarControl
         public int numWPs;
         public double[,] _waypoints;
         public int _currentWP;
-        const int STARTWP = 0;
+        const int STARTWP = 7;
 
         public long[] LaserData = new long[DrRobot.JaguarControl.JaguarCtrl.DISDATALEN];
         public double _x, _y, _theta;
         public double x_est, y_est, t_est;
         public double initialX = 0;//3.3;//-3.3;
         public double initialY = 0;//-0.3;//-7.7;
-        public double initialT = 3.14;//0;
+        public double initialT = -1.57;//0;
         public double desiredX, desiredY, desiredT;
         public double desiredR;
         public double _actRotRateL, _actRotRateR;
@@ -1170,16 +1170,16 @@ namespace DrRobot.JaguarControl
                 vel = 0.7;
                 maxVelocity = 1.0;                
             }
-            else if (_currentWP == 10 || _currentWP == 11)
+            else if (_currentWP == 4 || /*_currentWP == 10 || _currentWP == 11 ||*/ _currentWP == 8)
             {
                 vel = 1.25;
                 maxVelocity = 1.25;
-            }
-            else if (_currentWP == 4 || _currentWP == 8)
+            }/*
+            else if ()
             {
                 vel = 1.5;
                 maxVelocity = 1.5;
-            }
+            }*/
             else
             {
                 vel = 1.0;
@@ -1461,10 +1461,10 @@ namespace DrRobot.JaguarControl
             pf.Predict();
             //count = (count + 1) % 10;
 
-            var lastFewWayPoints = 5;
+            var lastFewWayPoints = 2;
 
             HashSet<int> blackSet;
-            if (_currentWP > _waypoints.Length - lastFewWayPoints)
+            if ((_currentWP > _waypoints.Length - lastFewWayPoints) && false)
                 blackSet = blackList;
             else
                 blackSet = new HashSet<int>();
