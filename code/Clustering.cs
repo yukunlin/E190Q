@@ -92,13 +92,13 @@ namespace DrRobot.JaguarControl
 
                     // Handles t ~= 3.14, reappropriated from ParticleFilter.cs's EstimatedState() (GK 4/22)
                     tAvgX += Math.Cos(partFull[i][2]) * partFull[i][3];
-                    tAvgY += Math.Sin(partFull[i][2]) * partFull[i][3];
-                    tWeightedAvg = Math.Atan2(tAvgY, tAvgX);
+                    tAvgY += Math.Sin(partFull[i][2]) * partFull[i][3];                    
 
                     wSum += partFull[i][3];
 
                     if (i == partFull.Length - 1)
                     {
+                        tWeightedAvg = Math.Atan2(tAvgY, tAvgX);
                         clustersFound[count] = new double[] { xWeightedAvg / (wSum + offset), yWeightedAvg / (wSum + offset), tWeightedAvg / (wSum + offset), wSum };
                     }
 
@@ -117,12 +117,12 @@ namespace DrRobot.JaguarControl
                         // Handles t ~= 3.14, reappropriated from ParticleFilter.cs's EstimatedState() (GK 4/22)
                         tAvgX += Math.Cos(partFull[i][2]) * partFull[i][3];
                         tAvgY += Math.Sin(partFull[i][2]) * partFull[i][3];
-                        tWeightedAvg = Math.Atan2(tAvgY, tAvgX);
-
+                        
                         wSum = partFull[i][3];
 
                         if (i == partFull.Length - 1)
                         {
+                            tWeightedAvg = Math.Atan2(tAvgY, tAvgX);
                             clustersFound[count] = new double[] { xWeightedAvg / (wSum + offset), yWeightedAvg / (wSum + offset), tWeightedAvg / (wSum + offset), wSum };
                         }
                    }
