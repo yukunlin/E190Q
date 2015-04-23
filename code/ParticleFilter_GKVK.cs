@@ -28,8 +28,8 @@ namespace DrRobot.JaguarControl
         public const double DISPERSION_RATE = 0.2;
         public int DISPERSION;
 
-        public double K_wheelRandomness = 0.5/5;//1;//0.15;//0.25
-        public double K_posRandomness = 0.1/5;
+        public double K_wheelRandomness = 0.5/7;//1;//0.15;//0.25
+        public double K_posRandomness = 0.1/7;
 
         public int SENSORSTEP = 10;
         public int LASERSTEPRATE = 3;
@@ -64,8 +64,8 @@ namespace DrRobot.JaguarControl
                 double t = ContinuousUniform.Sample(rand, -Math.PI, Math.PI);
                 */
 
-                x = ContinuousUniform.Sample(rand, -1, 1) + navigation.initialX;
-                y = ContinuousUniform.Sample(rand, -1, 1) + navigation.initialY;
+                x = ContinuousUniform.Sample(rand, -0.25, 0.25) + navigation.initialX;
+                y = ContinuousUniform.Sample(rand, -0.25, 0.25) + navigation.initialY;
                 t = ContinuousUniform.Sample(rand, -Math.PI / 10, Math.PI / 10) + navigation.initialT;//-1.57;
                
                 /*
@@ -97,8 +97,8 @@ namespace DrRobot.JaguarControl
                 double t = ContinuousUniform.Sample(rand, -Math.PI, Math.PI);
                 */
 
-                double x = ContinuousUniform.Sample(rand, -1, 1) + navigation.initialX;
-                double y = ContinuousUniform.Sample(rand, -1, 1) + navigation.initialY;
+                double x = ContinuousUniform.Sample(rand, -0.25, 0.25) + navigation.initialX;
+                double y = ContinuousUniform.Sample(rand, -0.25, 0.25) + navigation.initialY;
                 double t = ContinuousUniform.Sample(rand, -Math.PI / 10, Math.PI / 10) + navigation.initialT;// +1.57;
 
                 particles[i].x = x;

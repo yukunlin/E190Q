@@ -17,14 +17,14 @@ namespace DrRobot.JaguarControl
         public int numWPs;
         public double[,] _waypoints;
         public int _currentWP;
-        const int STARTWP = 7;
+        const int STARTWP = 0;
 
         public long[] LaserData = new long[DrRobot.JaguarControl.JaguarCtrl.DISDATALEN];
         public double _x, _y, _theta;
         public double x_est, y_est, t_est;
         public double initialX = 0;//3.3;//-3.3;
         public double initialY = 0;//-0.3;//-7.7;
-        public double initialT = -1.57;//0;
+        public double initialT = 3.14;//0;
         public double desiredX, desiredY, desiredT;
         public double desiredR;
         public double _actRotRateL, _actRotRateR;
@@ -101,7 +101,7 @@ namespace DrRobot.JaguarControl
 
         // PF Variables
         public Map map;
-        public ParticleFilter pf;
+        public ParticleFilter_GKVK pf;
         public Clustering cluster;
 
         public int numParticles = 300;
@@ -164,7 +164,7 @@ namespace DrRobot.JaguarControl
             realJaguar = jc.realJaguar;
             simulatedJaguar = jc.simulatedJaguar;
             map = new Map();
-            pf = new ParticleFilter(numParticles, this, map);
+            pf = new ParticleFilter_GKVK(numParticles, this, map);
             cluster = new Clustering(this);
 
             
@@ -873,7 +873,9 @@ namespace DrRobot.JaguarControl
                         KbetaFactor = (0.3 - pho) / 0.3;
                 }
 
-                desiredW = Kalpha * alpha + KbetaFactor * Kbeta * beta;
+                desiredW = 1.2 * Kalpha * alpha + KbetaFactor * Kbeta * beta;
+                // Add dependence on desiredV
+
                 //Console.WriteLine(alpha);
                 //Console.WriteLine(KbetaFactor * Kbeta * beta);
                 //Console.WriteLine(desiredW);
@@ -918,11 +920,11 @@ namespace DrRobot.JaguarControl
 
         }
 
-        private bool LineTrack(double m, double xend, double yend, double x_est, double y_est, double velocity, bool forwardCondition)
+        private bool LineTrack(double m, double xend, double yend, double x_est, double y_est, double d, bool forwardCondition)
         {
             double a = (x_est + m * y_est - xend - m * yend) / (1 + m * m);
             double b = m * a;
-            double d = velocity / Kpho;//1.0;
+            //double d = velocity / Kpho;//1.0;
             double tgoal = Math.Atan2(-b, -a);
 
             double xgoal = xend + a + d * Math.Cos(tgoal);
@@ -939,10 +941,10 @@ namespace DrRobot.JaguarControl
             return next;
         }
 
-        private int WaypointTrack(double xEst, double yEst, int currentWP, double velocity, bool forwardCondition)
+        private int WaypointTrack(double xEst, double yEst, int currentWP, double dist, bool forwardCondition)
         {
             double m = (_waypoints[currentWP,1]-_waypoints[currentWP-1,1])/(_waypoints[currentWP,0]-_waypoints[currentWP-1,0]+0.001);
-            bool next = LineTrack( m, _waypoints[currentWP,0], _waypoints[currentWP,1], xEst, yEst, velocity, forwardCondition );
+            bool next = LineTrack( m, _waypoints[currentWP,0], _waypoints[currentWP,1], xEst, yEst, dist, forwardCondition );
 
             if (next && currentWP < (numWPs - 2))
                 ++currentWP;
@@ -1164,15 +1166,15 @@ namespace DrRobot.JaguarControl
             if (_currentWP == 14 || _currentWP == 15)
                 goForward = false;
 
-            double vel = 1.0;
+            double dist = 1.0;
             if (_currentWP == 13 || _currentWP == 14)
             {
-                vel = 0.7;
-                maxVelocity = 1.0;                
+                dist = 0.7;
+                maxVelocity = 0.7;                
             }
             else if (_currentWP == 4 || /*_currentWP == 10 || _currentWP == 11 ||*/ _currentWP == 8)
             {
-                vel = 1.25;
+                dist = 1.25;
                 maxVelocity = 1.25;
             }/*
             else if ()
@@ -1182,10 +1184,10 @@ namespace DrRobot.JaguarControl
             }*/
             else
             {
-                vel = 1.0;
+                dist = 1.0;
                 maxVelocity = 1.0;
             }
-            _currentWP = WaypointTrack(x_est, y_est, _currentWP, vel, goForward);
+            _currentWP = WaypointTrack(x_est, y_est, _currentWP, dist, goForward);
             //Console.WriteLine(maxVelocity);
         }
 
@@ -1471,7 +1473,7 @@ namespace DrRobot.JaguarControl
 
             if (Math.Abs(_diffEncoderPulseL) > 0 || Math.Abs(_diffEncoderPulseR) > 0)// && count % 5 == 0)
             {
-                pf.Correct(blackSet);
+                pf.Correct(/*blackSet*/);
             }
 
             var estState = pf.EstimatedState();
