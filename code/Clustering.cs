@@ -66,6 +66,8 @@ namespace DrRobot.JaguarControl
             int count = 0;
             double xWeightedAvg = 0; 
             double yWeightedAvg = 0;
+            double tAvgX = 0;
+            double tAvgY = 0;
             double tWeightedAvg = 0;
             double wSum = 0;
             double offset = 0.000000001;
@@ -86,7 +88,13 @@ namespace DrRobot.JaguarControl
                 {
                     xWeightedAvg += partFull[i][0] * partFull[i][3];
                     yWeightedAvg += partFull[i][1] * partFull[i][3];
-                    tWeightedAvg += partFull[i][2] * partFull[i][3];
+                    //tWeightedAvg += partFull[i][2] * partFull[i][3];
+
+                    // Handles t ~= 3.14, reappropriated from ParticleFilter.cs's EstimatedState() (GK 4/22)
+                    tAvgX += Math.Cos(partFull[i][2]) * partFull[i][3];
+                    tAvgY += Math.Sin(partFull[i][2]) * partFull[i][3];
+                    tWeightedAvg = Math.Atan2(tAvgY, tAvgX);
+
                     wSum += partFull[i][3];
 
                     if (i == partFull.Length - 1)
@@ -104,7 +112,13 @@ namespace DrRobot.JaguarControl
                     
                         xWeightedAvg = partFull[i][0] * partFull[i][3];
                         yWeightedAvg = partFull[i][1] * partFull[i][3];
-                        tWeightedAvg = partFull[i][2] * partFull[i][3];
+                        //tWeightedAvg = partFull[i][2] * partFull[i][3];
+
+                        // Handles t ~= 3.14, reappropriated from ParticleFilter.cs's EstimatedState() (GK 4/22)
+                        tAvgX += Math.Cos(partFull[i][2]) * partFull[i][3];
+                        tAvgY += Math.Sin(partFull[i][2]) * partFull[i][3];
+                        tWeightedAvg = Math.Atan2(tAvgY, tAvgX);
+
                         wSum = partFull[i][3];
 
                         if (i == partFull.Length - 1)

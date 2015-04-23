@@ -17,14 +17,14 @@ namespace DrRobot.JaguarControl
         public int numWPs;
         public double[,] _waypoints;
         public int _currentWP;
-        const int STARTWP = 12;
+        const int STARTWP = 0;
 
         public long[] LaserData = new long[DrRobot.JaguarControl.JaguarCtrl.DISDATALEN];
         public double _x, _y, _theta;
         public double x_est, y_est, t_est;
         public double initialX = 0;//3.3;//-3.3;
         public double initialY = 0;//-0.3;//-7.7;
-        public double initialT = 1.57;//3.14;//0;
+        public double initialT = 3.14;//0;
         public double desiredX, desiredY, desiredT;
         public double desiredR;
         public double _actRotRateL, _actRotRateR;
