@@ -52,7 +52,7 @@ namespace DrRobot.JaguarControl
         public int deltaT = 50;
         private static int encoderMax = 32767;
         public int PULSESPERROTATION = 190;
-        public double WHEELRADIUS = 0.089;//0.089;  //Ben Chasnov Corrections
+        public double WHEELRADIUS = 0.089*0.92;//0.089;  //Ben Chasnov Corrections
         public double ROBOTRADIUS = 0.232;//0.242;//0.232 //Ben Chasnov Corrections
         public double _angleTravelled, _distanceTravelled;
         private double _diffEncoderPulseL, _diffEncoderPulseR;
@@ -806,7 +806,7 @@ namespace DrRobot.JaguarControl
             // ****************** Additional Student Code: End   ************                
         }
 
-        private void PointTrack(double goalX, double goalY, double goalT)
+        private void PointTrack(double goalX, double goalY, double goalT, bool forwardCondition)
         {
             // Put code here to calculate motorSignalR and 
             // motorSignalL. Make sure the robot does not exceed 
@@ -821,13 +821,14 @@ namespace DrRobot.JaguarControl
             double desiredW, desiredV;
 
             // Make decision whether to go forwards or backwards
-            bool forwardCondition = (dx * Math.Cos(t_est) + dy * Math.Sin(t_est)) >= 0;
+            //bool forwardCondition = (dx * Math.Cos(t_est) + dy * Math.Sin(t_est)) >= 0;
 
             
 
             // Translate problem into coordinates in pho, alpha, and beta.
             double pho = Math.Sqrt(dx * dx + dy * dy);
-            double alpha = -t_est + Math.Atan2(dy, dx);
+            double alpha = -t_est + (forwardCondition ? Math.Atan2(dy, dx) : Math.Atan2(-dy, -dx));
+            //double alpha = -t_est + Math.Atan2(dy, dx);
             //Console.WriteLine(goalX);
             //Console.WriteLine(goalY);
             //Console.WriteLine(dy);
@@ -854,7 +855,9 @@ namespace DrRobot.JaguarControl
                     beta = 0;
 
                 // desired forward velocity
-                desiredV = Kpho * pho;
+                //desiredV = Kpho * pho;
+                desiredV = forwardCondition ? Kpho * pho : -Kpho * pho;
+
                 //Console.WriteLine(pho);
                 double KbetaFactor = 0; //factor to which to scale Kbeta
                 // HIGH LEVEL: ignore desiredT until within 1 meter, 
@@ -915,7 +918,7 @@ namespace DrRobot.JaguarControl
 
         }
 
-        private bool LineTrack(double m, double xend, double yend, double x_est, double y_est, double velocity)
+        private bool LineTrack(double m, double xend, double yend, double x_est, double y_est, double velocity, bool forwardCondition)
         {
             double a = (x_est + m * y_est - xend - m * yend) / (1 + m * m);
             double b = m * a;
@@ -932,14 +935,14 @@ namespace DrRobot.JaguarControl
                 ygoal = yend;
                 next = true;
             }
-            PointTrack(xgoal, ygoal, tgoal);
+            PointTrack(xgoal, ygoal, tgoal, forwardCondition);
             return next;
         }
 
-        private int WaypointTrack(double xEst, double yEst, int currentWP, double velocity)
+        private int WaypointTrack(double xEst, double yEst, int currentWP, double velocity, bool forwardCondition)
         {
             double m = (_waypoints[currentWP,1]-_waypoints[currentWP-1,1])/(_waypoints[currentWP,0]-_waypoints[currentWP-1,0]+0.001);
-            bool next = LineTrack( m, _waypoints[currentWP,0], _waypoints[currentWP,1], xEst, yEst, velocity );
+            bool next = LineTrack( m, _waypoints[currentWP,0], _waypoints[currentWP,1], xEst, yEst, velocity, forwardCondition );
 
             if (next && currentWP < (numWPs - 2))
                 ++currentWP;
@@ -1157,26 +1160,32 @@ namespace DrRobot.JaguarControl
                 }
             }
             */
+            bool goForward = true;
+            if (_currentWP == 14 || _currentWP == 15)
+                goForward = false;
 
             double vel = 1.0;
             if (_currentWP == 13 || _currentWP == 14)
             {
                 vel = 0.7;
-                maxVelocity = 1.0;
+                maxVelocity = 1.0;                
+            }
+            else if (_currentWP == 10 || _currentWP == 11)
+            {
+                vel = 1.25;
+                maxVelocity = 1.25;
+            }
+            else if (_currentWP == 4 || _currentWP == 8)
+            {
+                vel = 1.5;
+                maxVelocity = 1.5;
             }
             else
             {
                 vel = 1.0;
                 maxVelocity = 1.0;
             }
-            
-            if (_currentWP == 4 || _currentWP == 8 || _currentWP == 10
-                || _currentWP == 11)
-            {
-                vel = 1.5;
-                maxVelocity = 1.5;
-            }
-            _currentWP = WaypointTrack(x_est, y_est, _currentWP, vel);
+            _currentWP = WaypointTrack(x_est, y_est, _currentWP, vel, goForward);
             //Console.WriteLine(maxVelocity);
         }
 
