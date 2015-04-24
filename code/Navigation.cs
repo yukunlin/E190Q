@@ -131,7 +131,7 @@ namespace DrRobot.JaguarControl
         public int trajSize, trajCurrentNode, numNodes;
 
         // clustering
-        public double radius = .5;
+        public double radius = 0.5;
         public double[][] clusterCount;
 
         public class Node
@@ -354,7 +354,7 @@ namespace DrRobot.JaguarControl
                     LocalizeEstWithParticleFilter();
 
                     clusterCount = cluster.FindClusters(radius);
-                    if (clusterCount.Length == 1)
+                    if (clusterCount.Length > 1)
                     {
                         double[] weightClust = new double[clusterCount.Length];
                         for (int i = 0; i < clusterCount.Length; i++)
@@ -366,6 +366,13 @@ namespace DrRobot.JaguarControl
                         x_est = clusterCount[maxIndex][0];
                         y_est = clusterCount[maxIndex][1];
                         t_est = clusterCount[maxIndex][2];
+                    }
+                    else
+                    {
+                        double[] state_est = pf.EstimatedState();
+                        x_est = state_est[0];
+                        y_est = state_est[1];
+                        t_est = state_est[2];
                     }
 
 
@@ -860,6 +867,11 @@ namespace DrRobot.JaguarControl
                 alpha = 0; //close enough, stop caring about alpha.
                 pho = 0;
             }
+
+            if (Math.Abs(alpha) < 0.5)
+                Kalpha = 3;
+            else
+                Kalpha = 5;
             //double beta = alpha - dt;
 
             dt = boundAngle(dt);

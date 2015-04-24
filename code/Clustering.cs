@@ -33,7 +33,7 @@ namespace DrRobot.JaguarControl
             for (int i = 0; i < n.numParticles; i++)
             {
                 clust[i] = new double[] { n.pf.particles[i].x, n.pf.particles[i].y };
-                partFull[i] = new double[] { n.pf.particles[i].x, n.pf.particles[i].y, n.pf.particles[i].t, n.pf.particles[i].w };
+                partFull[i] = new double[] { n.pf.particles[i].x, n.pf.particles[i].y, n.pf.particles[i].t, Math.Max(0.01,n.pf.particles[i].w) };
             }
             UniformKernel kernel = new UniformKernel();
             MeanShift meanShift = new MeanShift(dimension: 2, kernel: kernel, bandwidth: 2*r);
@@ -98,16 +98,16 @@ namespace DrRobot.JaguarControl
 
                     if (i == partFull.Length - 1)
                     {
-                     
-                        tWeightedAvg = Math.Atan2(tAvgY, tAvgX);
-                        clustersFound[count] = new double[] { xWeightedAvg / (wSum + offset), yWeightedAvg / (wSum + offset), tWeightedAvg / (wSum + offset), wSum };
+
+                        tWeightedAvg = Math.Atan2(tAvgY / (wSum + offset), tAvgX / (wSum + offset));
+                        clustersFound[count] = new double[] { xWeightedAvg / (wSum + offset), yWeightedAvg / (wSum + offset), tWeightedAvg, wSum };
                     }
 
                 }
                 else
                 {
 
-                    clustersFound[count] = new double[] { xWeightedAvg / (wSum+offset), yWeightedAvg / (wSum+offset), tWeightedAvg / (wSum+offset), wSum };
+                    clustersFound[count] = new double[] { xWeightedAvg / (wSum+offset), yWeightedAvg / (wSum+offset), tWeightedAvg, wSum };
                     count++;
                     
                         xWeightedAvg = partFull[i][0] * partFull[i][3];
@@ -122,8 +122,8 @@ namespace DrRobot.JaguarControl
 
                         if (i == partFull.Length - 1)
                         {
-                            tWeightedAvg = Math.Atan2(tAvgY, tAvgX);
-                            clustersFound[count] = new double[] { xWeightedAvg / (wSum + offset), yWeightedAvg / (wSum + offset), tWeightedAvg / (wSum + offset), wSum };
+                            tWeightedAvg = Math.Atan2(tAvgY / (wSum + offset), tAvgX / (wSum + offset));
+                            clustersFound[count] = new double[] { xWeightedAvg / (wSum + offset), yWeightedAvg / (wSum + offset), tWeightedAvg, wSum };
                         }
                    }
 
