@@ -1197,7 +1197,7 @@ namespace DrRobot.JaguarControl
                 goForward = false;
 
             double dist = 1.0;
-            if (_currentWP == 13 || _currentWP == 14 || _currentWP == 18 || _currentWP == 19)
+            if (_currentWP == 13 || _currentWP == 14 || _currentWP > 18 )
             {
                 dist = 0.7;
                 maxVelocity = 0.7;                
@@ -1206,16 +1206,19 @@ namespace DrRobot.JaguarControl
             {
                 dist = 1.25;
                 maxVelocity = 1.25;
-            }/*
-            else if ()
-            {
-                vel = 1.5;
+                /*
+                dist = 1.5;
                 maxVelocity = 1.5;
-            }*/
+                 */
+            }
             else
             {
                 dist = 1.0;
                 maxVelocity = 1.0;
+                /*
+                dist = 1.25;
+                maxVelocity = 1.25;
+                 */
             }
             _currentWP = WaypointTrack(x_est, y_est, _currentWP, dist, goForward);
             //Console.WriteLine(maxVelocity);
