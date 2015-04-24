@@ -21,7 +21,7 @@ namespace DrRobot.JaguarControl
         public Random rand;
 
         public int[] weightedParticleNums;
-        const int MAXWEIGHT = 30;
+        const int MAXWEIGHT = 40;
 
         //public int SENSORSTEP = 12;
         const double MAXERROR = 2000 * 2000; // 3000000

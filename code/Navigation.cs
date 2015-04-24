@@ -27,6 +27,7 @@ namespace DrRobot.JaguarControl
         public double initialT = -Math.PI;//-1.57;//0;
         public double desiredX, desiredY, desiredT;
         public double desiredR;
+        double desiredW, desiredV, desiredWprev;
         public double _actRotRateL, _actRotRateR;
 
         public double _currentEncoderPulseL, _currentEncoderPulseR;
@@ -58,8 +59,8 @@ namespace DrRobot.JaguarControl
         private double _diffEncoderPulseL, _diffEncoderPulseR;
         private double maxVelocity = 1.0;
 
-        private double Kpho = 1;
-        private double Kalpha = 5;//2//8
+        private double Kpho = 2;//1;
+        private double Kalpha = 8;//2//8
         private double Kbeta = -1;//-0.5//-1.0;
 
         double time = 0;
@@ -555,7 +556,7 @@ namespace DrRobot.JaguarControl
             //short maxPosOutput = 32767;
             //short takeOffMax = 1000;
 
-            double K_p = 0.35;
+            double K_p = 0.45;//0.35;
             double K_f = 7.0;
             //double K_i = 0.0;
             //double K_d = 0.0;
@@ -614,20 +615,35 @@ namespace DrRobot.JaguarControl
                 _accumR = 0;
             }
 
+            if (Math.Sign(desiredW) == -Math.Sign(desiredWprev))
+            {
+                _accumL = 0;
+                _accumR = 0;
+                /*
+                if (desiredW > 0)
+                    _accumL = 0.8 * Math.Sign(_accumL) * Math.Abs(_accumR);
+                else
+                    _accumR = 0.8 * Math.Sign(_accumR) * Math.Abs(_accumL);*/
+            }
+            desiredWprev = desiredW;
 
             _leftMot = K_f * _desiredRotRateL + _accumL;
             _rightMot = K_f * _desiredRotRateR + _accumR;
 
+            
+
+
+
             //******************Adding test code
-            //short test = 300;
-            //_leftMot = test;
-            //_rightMot = -test;
+            /*short test = 500;
+            _leftMot = test;
+            _rightMot = -test;*/
             //*******************
 
 
             // Nudge controller for rotation deadband region
             count = (count + 1) % 4;
-            bool pwmtest = count < 3;
+            bool pwmtest = count < 2;
 
             if (_desiredRotRateL == 0)
                 motorSignalL = ZEROOUTPUT;
@@ -640,10 +656,10 @@ namespace DrRobot.JaguarControl
                     else
                         motorSignalL= ZEROOUTPUT;
                 }
-                else
+                //else
                 {
                     //motorSignalR = (short) (ZEROOUTPUT - Math.Sign(_desiredRotRateR)*DEADBAND - K_f*_desiredRotRateR - _accumR);
-                    motorSignalL = (short)(ZEROOUTPUT + Math.Sign(_desiredRotRateL) * DEADBAND + _leftMot);
+                    motorSignalL = (short)(ZEROOUTPUT + Math.Sign(_leftMot) * DEADBAND + _leftMot);
                 }
             }
 
@@ -661,7 +677,7 @@ namespace DrRobot.JaguarControl
                 else
                 {
                     //motorSignalR = (short) (ZEROOUTPUT - Math.Sign(_desiredRotRateR)*DEADBAND - K_f*_desiredRotRateR - _accumR);
-                    motorSignalR = (short)(ZEROOUTPUT - Math.Sign(_desiredRotRateR) * DEADBAND - _rightMot);
+                    motorSignalR = (short)(ZEROOUTPUT - Math.Sign(_rightMot) * DEADBAND - _rightMot);
                 }
             }
             
@@ -847,7 +863,7 @@ namespace DrRobot.JaguarControl
             double dy = goalY - y_est;
             double dt = goalT - t_est;
 
-            double desiredW, desiredV;
+            //desiredW, desiredV;
 
             // Make decision whether to go forwards or backwards
             //bool forwardCondition = (dx * Math.Cos(t_est) + dy * Math.Sin(t_est)) >= 0;
@@ -867,11 +883,11 @@ namespace DrRobot.JaguarControl
                 alpha = 0; //close enough, stop caring about alpha.
                 pho = 0;
             }
-
+            /*
             if (Math.Abs(alpha) < 0.5)
-                Kalpha = 3;
-            else
                 Kalpha = 5;
+            else
+                Kalpha = 5;*/
             //double beta = alpha - dt;
 
             dt = boundAngle(dt);
@@ -942,7 +958,7 @@ namespace DrRobot.JaguarControl
 
             double maxRotVelocity;// = 0.6;
             if (Math.Sign(rightWheelVelocity) == -Math.Sign(leftWheelVelocity))
-                maxRotVelocity = 0.3; //make point rotations slower
+                maxRotVelocity = 0.4; //make point rotations slower
             else
                 maxRotVelocity = 0.6;
             if (Math.Abs(rightWheelVelocity - leftWheelVelocity) > maxRotVelocity)
@@ -1183,28 +1199,40 @@ namespace DrRobot.JaguarControl
                 goForward = false;
 
             double dist = 1.0;
-            if (_currentWP == 13 || _currentWP == 14 || _currentWP > 18 )
+            if (_currentWP == 13 || _currentWP == 14 || _currentWP > 15 )
             {
                 dist = 0.7;
                 maxVelocity = 0.7;                
             }
-            else if (_currentWP == 4 || /*_currentWP == 10 || _currentWP == 11 ||*/ _currentWP == 8)
+            else if (_currentWP == 1 || _currentWP == 2 || _currentWP == 3 || _currentWP == 12 ||  _currentWP == 13)
             {
+                /*
+                dist = 1.25;
+                maxVelocity = 1.25;*/
+
                 dist = 1.25;
                 maxVelocity = 1.25;
+
+            }
+            else if (_currentWP == 4 || /*_currentWP == 10 || _currentWP == 11 ||*/ _currentWP == 8)
+            {
                 /*
+                dist = 1.25;
+                maxVelocity = 1.25;*/
+                
                 dist = 1.5;
                 maxVelocity = 1.5;
-                 */
+                 
             }
             else
             {
+                /*
                 dist = 1.0;
                 maxVelocity = 1.0;
-                /*
-                dist = 1.25;
-                maxVelocity = 1.25;
-                 */
+                */
+                dist = 1.5;
+                maxVelocity = 1.5;
+                
             }
             _currentWP = WaypointTrack(x_est, y_est, _currentWP, dist, goForward);
             //Console.WriteLine(maxVelocity);

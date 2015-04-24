@@ -318,7 +318,7 @@ namespace DrRobot.JaguarControl
                 gyro_x = double.Parse(data[4]);
                 gyro_y = double.Parse(data[5]);
                 gyro_z = double.Parse(data[6]);
-                Console.WriteLine("gyro z : {0}", gyro_z );
+                //Console.WriteLine("gyro z : {0}", gyro_z );
                 imuRecord.accel_x = accel_x;
                 imuRecord.accel_y = accel_y;
                 imuRecord.accel_z = accel_z;
