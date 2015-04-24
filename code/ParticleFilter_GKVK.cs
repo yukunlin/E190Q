@@ -28,8 +28,8 @@ namespace DrRobot.JaguarControl
         public const double DISPERSION_RATE = 0.2;
         public int DISPERSION;
 
-        public double K_wheelRandomness = 0.5/7;//1;//0.15;//0.25
-        public double K_posRandomness = 0.1/7;
+        public double K_wheelRandomness = 0.5/10;//1;//0.15;//0.25
+        public double K_posRandomness = 0.1/10;
 
         public int SENSORSTEP = 10;
         public int LASERSTEPRATE = 3;

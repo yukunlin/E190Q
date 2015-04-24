@@ -17,14 +17,14 @@ namespace DrRobot.JaguarControl
         public int numWPs;
         public double[,] _waypoints;
         public int _currentWP;
-        const int STARTWP = 0;
+        const int STARTWP = 15;
 
         public long[] LaserData = new long[DrRobot.JaguarControl.JaguarCtrl.DISDATALEN];
         public double _x, _y, _theta;
         public double x_est, y_est, t_est;
         public double initialX = 0;//3.3;//-3.3;
         public double initialY = 0;//-0.3;//-7.7;
-        public double initialT = 3.14;//0;
+        public double initialT = 0;
         public double desiredX, desiredY, desiredT;
         public double desiredR;
         public double _actRotRateL, _actRotRateR;
@@ -49,7 +49,7 @@ namespace DrRobot.JaguarControl
         public bool runThread = true;
         public bool loggingOn;
         StreamWriter logFile;
-        public int deltaT = 50;
+        public int deltaT = 50;//50;
         private static int encoderMax = 32767;
         public int PULSESPERROTATION = 190;
         public double WHEELRADIUS = 0.089*0.92;//0.089;  //Ben Chasnov Corrections
@@ -77,10 +77,10 @@ namespace DrRobot.JaguarControl
         public double accCalib_x = 18;
         public double accCalib_y = 4;
 
-        private double _lastDiffL = 0;
-        private double _lastDiffR = 0;
-        private int _zeroCounterL = 0;
-        private int _zeroCounterR = 0;
+        //private double _lastDiffL = 0;
+        //private double _lastDiffR = 0;
+        //private int _zeroCounterL = 0;
+        //private int _zeroCounterR = 0;
         private const short ZEROOUTPUT = 16383;
         public double _accumL = 0;
         public double _accumR = 0;
@@ -551,35 +551,35 @@ namespace DrRobot.JaguarControl
 
             double K_p = 0.35;
             double K_f = 7.0;
-            double K_i = 0.0;
-            double K_d = 0.0;
+            //double K_i = 0.0;
+            //double K_d = 0.0;
 
             double deltaTs = _milliElapsed / 1000.0;
 
             //_desiredRotRateL = _desiredRotRateR = 190;
 
-            double maxErr = 8000 / deltaTs;
+            //double maxErr = 8000 / deltaTs;
             //_desiredRotRateL = 250;
             //_desiredRotRateR = 250;
 
-            _actRotRateL = movingAverage(_movingAvgValuesL,_diffEncoderPulseL / deltaTs,10);
-            _actRotRateR = movingAverage(_movingAvgValuesR,_diffEncoderPulseR / deltaTs,10);
+            _actRotRateL = _diffEncoderPulseL / deltaTs;// movingAverage(_movingAvgValuesL, _diffEncoderPulseL / deltaTs, 10);
+            _actRotRateR = _diffEncoderPulseR / deltaTs;// movingAverage(_movingAvgValuesR, _diffEncoderPulseR / deltaTs, 10);
 
 
             e_L = _desiredRotRateL - _actRotRateL;
             e_R = _desiredRotRateR + _actRotRateR;
 
-            e_sum_L = .9 * e_sum_L + e_L * deltaTs;
-            e_sum_R = .9 * e_sum_R + e_R * deltaTs;
+            //e_sum_L = .9 * e_sum_L + e_L * deltaTs;
+            //e_sum_R = .9 * e_sum_R + e_R * deltaTs;
 
-            e_sum_L = Math.Max(-maxErr, Math.Min(e_sum_L, maxErr));
-            e_sum_R = Math.Max(-maxErr, Math.Min(e_sum_R, maxErr));
+            //e_sum_L = Math.Max(-maxErr, Math.Min(e_sum_L, maxErr));
+            //e_sum_R = Math.Max(-maxErr, Math.Min(e_sum_R, maxErr));
 
-            double dErrL = movingAverage(_movingAvgDErrL, (e_L - e_L_last) / deltaTs, 5);
-            double dErrR = movingAverage(_movingAvgDErrR, (e_R - e_R_last) / deltaTs, 5);
+            //double dErrL = movingAverage(_movingAvgDErrL, (e_L - e_L_last) / deltaTs, 5);
+            //double dErrR = movingAverage(_movingAvgDErrR, (e_R - e_R_last) / deltaTs, 5);
 
-            u_L = ((K_p * e_L) + (K_i * e_sum_L) + (K_d * dErrL));
-            u_R = ((K_p * e_R) + (K_i * e_sum_R) + (K_d * dErrR));
+            u_L = (K_p * e_L);// + (K_i * e_sum_L) + (K_d * dErrL);
+            u_R = (K_p * e_R);// + (K_i * e_sum_R) + (K_d * dErrR);
 
             e_R_last = e_R;
             e_L_last = e_L;
@@ -611,32 +611,55 @@ namespace DrRobot.JaguarControl
 
             _leftMot = K_f * _desiredRotRateL + _accumL;
             _rightMot = K_f * _desiredRotRateR + _accumR;
-            // 
+
+            //******************Adding test code
+            //short test = 300;
+            //_leftMot = test;
+            //_rightMot = -test;
+            //*******************
+
+
+            // Nudge controller for rotation deadband region
+            count = (count + 1) % 4;
+            bool pwmtest = count < 3;
 
             if (_desiredRotRateL == 0)
                 motorSignalL = ZEROOUTPUT;
             else
             {
-                //motorSignalL = (short) (ZEROOUTPUT + Math.Sign(_desiredRotRateL)*DEADBAND + K_f*_desiredRotRateL + _accumL);
-                motorSignalL = (short)(ZEROOUTPUT + Math.Sign(_desiredRotRateL) * DEADBAND + _leftMot);
+                if (Math.Abs(_leftMot) < 1000)
+                {
+                    if (pwmtest)
+                        motorSignalL = (short)(ZEROOUTPUT + Math.Sign(_leftMot) * DEADBAND + Math.Sign(_leftMot) * Math.Min(Math.Abs(4 * _leftMot), 2000));
+                    else
+                        motorSignalL= ZEROOUTPUT;
+                }
+                else
+                {
+                    //motorSignalR = (short) (ZEROOUTPUT - Math.Sign(_desiredRotRateR)*DEADBAND - K_f*_desiredRotRateR - _accumR);
+                    motorSignalL = (short)(ZEROOUTPUT + Math.Sign(_desiredRotRateL) * DEADBAND + _leftMot);
+                }
             }
 
             if (_desiredRotRateR == 0)
                 motorSignalR = ZEROOUTPUT;
             else
             {
-                //motorSignalR = (short) (ZEROOUTPUT - Math.Sign(_desiredRotRateR)*DEADBAND - K_f*_desiredRotRateR - _accumR);
-                motorSignalR = (short)(ZEROOUTPUT - Math.Sign(_desiredRotRateR) * DEADBAND - _rightMot);
+                if (Math.Abs(_rightMot) < 1000)
+                {
+                    if (pwmtest)
+                        motorSignalR = (short)(ZEROOUTPUT - Math.Sign(_rightMot) * DEADBAND - Math.Sign(_rightMot) * Math.Min(Math.Abs(4 * _rightMot), 2000));
+                    else
+                        motorSignalR = ZEROOUTPUT;
+                }
+                else
+                {
+                    //motorSignalR = (short) (ZEROOUTPUT - Math.Sign(_desiredRotRateR)*DEADBAND - K_f*_desiredRotRateR - _accumR);
+                    motorSignalR = (short)(ZEROOUTPUT - Math.Sign(_desiredRotRateR) * DEADBAND - _rightMot);
+                }
             }
-
-            //******************Adding test code
-            //short test = 300;
-            //_leftMot = test;
-            //_rightMot = -test;
-            //motorSignalL = (short)(ZEROOUTPUT + Math.Sign(_leftMot) * DEADBAND + _leftMot);
-            //motorSignalR = (short)(ZEROOUTPUT - Math.Sign(_rightMot) * DEADBAND - _rightMot);
             
-            //*******************
+            
             motorSignalL = (short)Math.Min(maxPosOutput-takeOffMax, Math.Max(takeOffMax, (int)motorSignalL));
             motorSignalR = (short)Math.Min(maxPosOutput-takeOffMax, Math.Max(takeOffMax, (int)motorSignalR));
 
@@ -656,41 +679,41 @@ namespace DrRobot.JaguarControl
                 simulatedJaguar.DcMotorPwmNonTimeCtrAll(0, 0, 0, motorSignalL, motorSignalR, 0);
             else
             {
-                //jaguarControl.realJaguar.DcMotorPwmNonTimeCtrAll(0, 0, 0, motorSignalL, motorSignalR, 0);
-                //Console.WriteLine("ml: {0}, mr: {1}", motorSignalL, motorSignalR);
+                jaguarControl.realJaguar.DcMotorPwmNonTimeCtrAll(0, 0, 0, motorSignalL, motorSignalR, 0);
+                Console.WriteLine("ml: {0}, mr: {1}", motorSignalL, motorSignalR);
                 
                 // If motor is operating subthreshold, add periodic nudges for turning.
                 
-                short tempMotorSignalL, tempMotorSignalR;
-                count = (count + 1) % 4;
-                bool pwmtest = count < 3;
-                if (Math.Abs(_leftMot) < 1000)
-                {
-                    if (pwmtest)
-                        tempMotorSignalL = (short)(ZEROOUTPUT + Math.Sign(_leftMot) * DEADBAND + Math.Sign(_leftMot)*Math.Min(Math.Abs(4 * _leftMot), 2000));
-                    else
-                        tempMotorSignalL = ZEROOUTPUT;
-                }
-                else
-                {
-                    tempMotorSignalL = motorSignalL;
-                }
+                //short tempMotorSignalL, tempMotorSignalR;
+                //count = (count + 1) % 4;
+                //bool pwmtest = count < 3;
+                //if (Math.Abs(_leftMot) < 1000)
+                //{
+                //    if (pwmtest)
+                //        tempMotorSignalL = (short)(ZEROOUTPUT + Math.Sign(_leftMot) * DEADBAND + Math.Sign(_leftMot)*Math.Min(Math.Abs(4 * _leftMot), 2000));
+                //    else
+                //        tempMotorSignalL = ZEROOUTPUT;
+                //}
+                //else
+                //{
+                //    tempMotorSignalL = motorSignalL;
+                //}
 
-                if (Math.Abs(_rightMot) < 1000)
-                {
-                    if (pwmtest)
-                        tempMotorSignalR = (short)(ZEROOUTPUT - Math.Sign(_rightMot) * DEADBAND - Math.Sign(_rightMot) * Math.Min(Math.Abs(4 * _rightMot), 2000));
-                    else
-                        tempMotorSignalR = ZEROOUTPUT;
-                }
-                else
-                {
-                    tempMotorSignalR = motorSignalR;
-                }
+                //if (Math.Abs(_rightMot) < 1000)
+                //{
+                //    if (pwmtest)
+                //        tempMotorSignalR = (short)(ZEROOUTPUT - Math.Sign(_rightMot) * DEADBAND - Math.Sign(_rightMot) * Math.Min(Math.Abs(4 * _rightMot), 2000));
+                //    else
+                //        tempMotorSignalR = ZEROOUTPUT;
+                //}
+                //else
+                //{
+                //    tempMotorSignalR = motorSignalR;
+                //}
 
                 
-                jaguarControl.realJaguar.DcMotorPwmNonTimeCtrAll(0, 0, 0, tempMotorSignalL, tempMotorSignalR, 0);
-                Console.WriteLine("ml: {0}, mr: {1}", tempMotorSignalL, tempMotorSignalR);
+                //jaguarControl.realJaguar.DcMotorPwmNonTimeCtrAll(0, 0, 0, tempMotorSignalL, tempMotorSignalR, 0);
+                //Console.WriteLine("ml: {0}, mr: {1}", tempMotorSignalL, tempMotorSignalR);
                 
             }
         }
@@ -834,12 +857,15 @@ namespace DrRobot.JaguarControl
             //Console.WriteLine(dy);
 
             if (pho < 0.2)
+            {
                 alpha = 0; //close enough, stop caring about alpha.
-            double beta = alpha - dt;
+                pho = 0;
+            }
+            //double beta = alpha - dt;
 
             dt = boundAngle(dt);
             alpha = boundAngle(alpha);
-            beta = boundAngle(beta);
+            //beta = boundAngle(beta);
 
             if (Math.Abs(alpha) > 1)
             {
@@ -849,31 +875,31 @@ namespace DrRobot.JaguarControl
             else
             {
                 //Threshold close enough values to zero to avoid jitter
-                if (pho < 0.2)
-                    pho = 0;
-                if (Math.Abs(beta) < 0.05)
-                    beta = 0;
+                //if (pho < 0.2)
+                //    pho = 0;
+                //if (Math.Abs(beta) < 0.05)
+                //    beta = 0;
 
                 // desired forward velocity
                 //desiredV = Kpho * pho;
                 desiredV = forwardCondition ? Kpho * pho : -Kpho * pho;
 
                 //Console.WriteLine(pho);
-                double KbetaFactor = 0; //factor to which to scale Kbeta
+                //double KbetaFactor = 0; //factor to which to scale Kbeta
                 // HIGH LEVEL: ignore desiredT until within 1 meter, 
                 // go against the desired direction until 0.1, then turn towards desired direction
                 // Thus KbetaFactor is 0 until pho < 1, then it decreases to -2, 
                 // and then increases back to 0 at 0.1, and 1 at 0.
-                if (pho < 1)
+                /*if (pho < 1)
                 {
                     KbetaFactor = (pho - 1) /(1-0.4) * 2; //slope from 0 to -2 from 0.7 to 0.3
                     if (pho < 0.4) //slope from -2 to 0 from 0.3 to 0.1
                         KbetaFactor = (0.1 - pho) / 0.3 * 2;
                     if (pho < 0.3) //slope from 0 to 1 from 0.1 to 0.0
                         KbetaFactor = (0.3 - pho) / 0.3;
-                }
+                }*/
 
-                desiredW = 1.2 * Kalpha * alpha + KbetaFactor * Kbeta * beta;
+                desiredW = Kalpha * alpha;// +KbetaFactor * Kbeta * beta;
                 // Add dependence on desiredV
 
                 //Console.WriteLine(alpha);
@@ -903,7 +929,11 @@ namespace DrRobot.JaguarControl
                 rightWheelVelocity = Math.Sign(rightWheelVelocity) * maxVelocity;
             }
 
-            double maxRotVelocity = 0.6;
+            double maxRotVelocity;// = 0.6;
+            if (Math.Sign(rightWheelVelocity) == -Math.Sign(leftWheelVelocity))
+                maxRotVelocity = 0.3; //make point rotations slower
+            else
+                maxRotVelocity = 0.6;
             if (Math.Abs(rightWheelVelocity - leftWheelVelocity) > maxRotVelocity)
             {
                 double scaleRatio = maxRotVelocity/Math.Abs(rightWheelVelocity - leftWheelVelocity);
@@ -915,8 +945,8 @@ namespace DrRobot.JaguarControl
 
             _desiredRotRateL = (short)(leftWheelVelocity / (2 * Math.PI * WHEELRADIUS) * PULSESPERROTATION);
             _desiredRotRateR = (short)(rightWheelVelocity / (2 * Math.PI * WHEELRADIUS) * PULSESPERROTATION);
-            //Console.WriteLine("desiredV: {0}, desiredOmega: {1} ", desiredV, desiredW);
-            //Console.WriteLine("desired rot L: {0}, desired rot R:, {1}\n", _desiredRotRateL, _desiredRotRateR);
+            Console.WriteLine("desiredV: {0}, desiredOmega: {1} ", desiredV, desiredW);
+            Console.WriteLine("desired rot L: {0}, desired rot R:, {1}\n", _desiredRotRateL, _desiredRotRateR);
 
         }
 
@@ -1163,11 +1193,11 @@ namespace DrRobot.JaguarControl
             }
             */
             bool goForward = true;
-            if (_currentWP == 14 || _currentWP == 15)
+            if (_currentWP == 14 || _currentWP == 15 || _currentWP == 19)
                 goForward = false;
 
             double dist = 1.0;
-            if (_currentWP == 13 || _currentWP == 14)
+            if (_currentWP == 13 || _currentWP == 14 || _currentWP == 18 || _currentWP == 19)
             {
                 dist = 0.7;
                 maxVelocity = 0.7;                
