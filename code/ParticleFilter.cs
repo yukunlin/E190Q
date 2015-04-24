@@ -74,15 +74,8 @@ namespace DrRobot.JaguarControl
         {
             for (int i = 0; i < particles.Length; i++)
             {
-
-                
-                //double x = ContinuousUniform.Sample(rand, m.minX, m.maxX);
-                //double y = ContinuousUniform.Sample(rand, m.minY, m.maxY);
-                //double t = ContinuousUniform.Sample(rand, -Math.PI, Math.PI);
-
-
-                double x = ContinuousUniform.Sample(rand, -0.25, 0.25) + n.initialX;
-                double y = ContinuousUniform.Sample(rand, -0.25, 0.25) + n.initialY;
+                double x = ContinuousUniform.Sample(rand, -1, 1) + n.initialX;
+                double y = ContinuousUniform.Sample(rand, -1, 1) + n.initialY;
                 double t = ContinuousUniform.Sample(rand, -Math.PI/10 , Math.PI/10) + n.initialT;// +1.57;
 
                 particles[i].x = x;
@@ -99,6 +92,8 @@ namespace DrRobot.JaguarControl
                 double errorAngle = Normal.Sample(rand, 0, Math.Abs(scaleAngle * n._angleTravelled + baseAngle));
                 double distTravelled = n._distanceTravelled + errorDist;
                 double angTravelled = n._angleTravelled + errorAngle;
+                //double angTravelled = (n.jaguarControl.gyro_z + 35)  * (n.deltaT / 1000.0) * (1/10.0) * (Math.PI/ 180);
+                angTravelled += Normal.Sample(rand, 0, Math.Abs(.01*n._angleTravelled));
                 particles[i].Propagate(distTravelled, angTravelled);
 
                 double errorX = Normal.Sample(rand, 0, Math.Abs(scaleDist * n._distanceTravelled));

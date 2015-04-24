@@ -430,9 +430,9 @@ namespace DrRobot.JaguarControl
 
                 // Draw state estimate
                 double[] stateEst = navigation.pf.EstimatedState();
-                double xEst = stateEst[0];
-                double yEst = stateEst[1];
-                double tEst = stateEst[2];
+                double xEst = navigation.x_est;
+                double yEst = navigation.y_est;
+                double tEst = navigation.t_est;
 
                 int xParEst = (int)(xCenter + xEst * mapResolution);
                 int yParEst = (int)(yCenter - yEst * mapResolution);
