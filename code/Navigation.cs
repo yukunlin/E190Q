@@ -17,14 +17,14 @@ namespace DrRobot.JaguarControl
         public int numWPs;
         public double[,] _waypoints;
         public int _currentWP;
-        const int STARTWP = 15;
+        const int STARTWP = 0;
 
         public long[] LaserData = new long[DrRobot.JaguarControl.JaguarCtrl.DISDATALEN];
         public double _x, _y, _theta;
         public double x_est, y_est, t_est;
         public double initialX = 0;//3.3;//-3.3;
         public double initialY = 0;//-0.3;//-7.7;
-        public double initialT = 0;
+        public double initialT = -Math.PI;//-1.57;//0;
         public double desiredX, desiredY, desiredT;
         public double desiredR;
         public double _actRotRateL, _actRotRateR;
@@ -36,7 +36,7 @@ namespace DrRobot.JaguarControl
 
         public bool newLaserData = false;
         public bool motionPlanRequired;
-        private JaguarCtrl jaguarControl;
+        public JaguarCtrl jaguarControl;
         private AxDRROBOTSentinelCONTROLLib.AxDDrRobotSentinel realJaguar;
         private AxDDrRobotSentinel_Simulator simulatedJaguar;
         private Thread controlThread;
@@ -131,7 +131,7 @@ namespace DrRobot.JaguarControl
         public int trajSize, trajCurrentNode, numNodes;
 
         // clustering
-        public double radius = .1;
+        public double radius = .5;
         public double[][] clusterCount;
 
         public class Node
@@ -354,26 +354,25 @@ namespace DrRobot.JaguarControl
                     LocalizeEstWithParticleFilter();
 
                     clusterCount = cluster.FindClusters(radius);
-                    
+                    if (clusterCount.Length == 1)
+                    {
+                        double[] weightClust = new double[clusterCount.Length];
+                        for (int i = 0; i < clusterCount.Length; i++)
+                        {
+                            weightClust[i] = clusterCount[i][3];
+                        }
+                        var maxWeight = weightClust.Max();
+                        int maxIndex = weightClust.ToList().IndexOf(maxWeight);
+                        x_est = clusterCount[maxIndex][0];
+                        y_est = clusterCount[maxIndex][1];
+                        t_est = clusterCount[maxIndex][2];
+                    }
+
 
                     // If using the point tracker, call the function
                     if (jaguarControl.controlMode == jaguarControl.AUTONOMOUS)
                     {
 
-                        // Check if we need to create a new trajectory
-                        /*if (motionPlanRequired)
-                        {
-                            // Construct a new trajectory (lab 5)
-                           // PRMMotionPlanner();
-                            motionPlanRequired = false;
-                        }*/
-                        // Drive the robot to a desired Point (lab 3)
-                        //FlyToSetPoint();
-
-
-
-                        // Follow the trajectory instead of a desired point (lab 3)
-                        //TrackTrajectoryPRM();
 
                         // Follow the trajectory instead of a desired point (lab 3)
                         if (jaguarControl.AUTOMODE == jaguarControl.TRACKTRAJ)
@@ -945,8 +944,6 @@ namespace DrRobot.JaguarControl
 
             _desiredRotRateL = (short)(leftWheelVelocity / (2 * Math.PI * WHEELRADIUS) * PULSESPERROTATION);
             _desiredRotRateR = (short)(rightWheelVelocity / (2 * Math.PI * WHEELRADIUS) * PULSESPERROTATION);
-            Console.WriteLine("desiredV: {0}, desiredOmega: {1} ", desiredV, desiredW);
-            Console.WriteLine("desired rot L: {0}, desired rot R:, {1}\n", _desiredRotRateL, _desiredRotRateR);
 
         }
 
@@ -1169,29 +1166,6 @@ namespace DrRobot.JaguarControl
         // This function is called to follow a trajectory constructed by PRMMotionPlanner()
         private void TrackTrajectory()
         {
-            /*
-            if (_trajX.Count > 0)
-            {
-                // calculate x, y and theta to desired point
-                var deltaX = desiredX - x_est;
-                var deltaY = desiredY - y_est;
-
-                const double distanceThreshold = 0.15;
-                var distanceToTarget = Math.Sqrt(Math.Pow(deltaX, 2) + Math.Pow(deltaY, 2));
-
-
-                if (distanceToTarget < distanceThreshold)
-                {
-                    desiredX = _trajX.First.Value;
-                    desiredY = _trajY.First.Value;
-                    desiredT = _trajT.First.Value;
-
-                    _trajX.RemoveFirst();
-                    _trajY.RemoveFirst();
-                    _trajT.RemoveFirst();
-                }
-            }
-            */
             bool goForward = true;
             if (_currentWP == 14 || _currentWP == 15 || _currentWP == 19)
                 goForward = false;
@@ -1505,11 +1479,6 @@ namespace DrRobot.JaguarControl
             {
                 pf.Correct(/*blackSet*/);
             }
-
-            var estState = pf.EstimatedState();
-            x_est = estState[0];
-            y_est = estState[1];
-            t_est = estState[2];
         }
 
 

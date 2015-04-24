@@ -49,13 +49,13 @@ namespace DrRobot.JaguarControl
         private double accel_y_offset = 0;
         private double accel_z_offset = 0;
 
-        private double gyro_x = 0;
-        private double gyro_y = 0;
-        private double gyro_z = 0;
+        public double gyro_x = 0;
+        public double gyro_y = 0;
+        public double gyro_z = 0;
 
-        private double gyro_x_offset = 0;   //377
-        private double gyro_y_offset = 0;
-        private double gyro_z_offset = 0;
+        public double gyro_x_offset = 0;   //377
+        public double gyro_y_offset = 0;
+        public double gyro_z_offset = 0;
 
 
         public struct IMURecord
@@ -318,6 +318,7 @@ namespace DrRobot.JaguarControl
                 gyro_x = double.Parse(data[4]);
                 gyro_y = double.Parse(data[5]);
                 gyro_z = double.Parse(data[6]);
+                Console.WriteLine("gyro z : {0}", gyro_z );
                 imuRecord.accel_x = accel_x;
                 imuRecord.accel_y = accel_y;
                 imuRecord.accel_z = accel_z;

@@ -60,7 +60,7 @@ namespace DrRobot.JaguarControl
             
             var setOfLabel = new HashSet<int>(labels);
             var uniqueLabels = setOfLabel.Count;
-            double[][] clustersFound = new double[uniqueLabels][];
+            double[][] clustersFound = new double[(int)(labelsClean.Max()+1)][];
 
             
             int count = 0;
@@ -98,6 +98,7 @@ namespace DrRobot.JaguarControl
 
                     if (i == partFull.Length - 1)
                     {
+                     
                         tWeightedAvg = Math.Atan2(tAvgY, tAvgX);
                         clustersFound[count] = new double[] { xWeightedAvg / (wSum + offset), yWeightedAvg / (wSum + offset), tWeightedAvg / (wSum + offset), wSum };
                     }
@@ -108,7 +109,6 @@ namespace DrRobot.JaguarControl
 
                     clustersFound[count] = new double[] { xWeightedAvg / (wSum+offset), yWeightedAvg / (wSum+offset), tWeightedAvg / (wSum+offset), wSum };
                     count++;
-                    track++;
                     
                         xWeightedAvg = partFull[i][0] * partFull[i][3];
                         yWeightedAvg = partFull[i][1] * partFull[i][3];
