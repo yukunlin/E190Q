@@ -1204,14 +1204,14 @@ namespace DrRobot.JaguarControl
                 dist = 0.7;
                 maxVelocity = 0.7;                
             }
-            else if (_currentWP == 1 || _currentWP == 2 || _currentWP == 3 || _currentWP == 12 ||  _currentWP == 13)
+            else if (_currentWP == 1 || _currentWP == 2 || _currentWP == 3 || _currentWP == 11 || _currentWP == 12 || _currentWP == 13)
             {
                 /*
                 dist = 1.25;
                 maxVelocity = 1.25;*/
 
-                dist = 1.25;
-                maxVelocity = 1.25;
+                dist = 1.0;
+                maxVelocity = 1.0;
 
             }
             else if (_currentWP == 4 || /*_currentWP == 10 || _currentWP == 11 ||*/ _currentWP == 8)
